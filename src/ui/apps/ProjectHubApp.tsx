@@ -26,6 +26,8 @@ export const ProjectHubApp: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [viewingFile, setViewingFile] = useState<{ title: string; filename: string; content: string } | null>(null);
+  const [lastLaunch, setLastLaunch] = useState<{ projectId: string; pid: number } | null>(null);
+  const [launchBlocked, setLaunchBlocked] = useState(false);
 
   useEffect(() => {
     const handle = setInterval(() => setTick((t) => t + 1), 300);
@@ -53,15 +55,15 @@ export const ProjectHubApp: React.FC = () => {
     return matchesCategory && matchesSearch;
   });
 
-  const handleLaunchSimulatedProcess = (project: PortfolioProject) => {
+  const handleStartSimulation = (project: PortfolioProject) => {
     // Check if already running
     const existing = activeProcesses.find((p) => p.getName() === project.processName);
     if (existing) {
       return;
     }
 
-    // Spawn authentic simulated process into the kernel
-    kernel.processManager.createProcess(
+    // Start the authentic NOVA simulated process.
+    const proc = kernel.processManager.createProcess(
       project.processName,
       project.processName,
       project.workloadType,
@@ -71,6 +73,10 @@ export const ProjectHubApp: React.FC = () => {
         virtualPagesCount: Math.ceil((project.memoryMb * 1024) / 4),
       }
     );
+    const targetUrl = (project as PortfolioProject & { launchUrl?: string }).launchUrl || project.githubUrl;
+    const opened = window.open(targetUrl, '_blank', 'noopener,noreferrer');
+    setLastLaunch({ projectId: project.id, pid: proc.getPid() });
+    setLaunchBlocked(opened === null);
     setTick((t) => t + 1);
   };
 
@@ -231,10 +237,10 @@ export const ProjectHubApp: React.FC = () => {
                     </div>
                   ) : (
                     <button
-                      onClick={() => handleLaunchSimulatedProcess(project)}
+                      onClick={() => handleStartSimulation(project)}
                       className="px-2.5 py-1 rounded bg-cyan-600 hover:bg-cyan-500 text-white font-mono text-[10px] flex items-center gap-1 font-semibold transition-colors"
                     >
-                      <Play className="w-3 h-3" /> Launch Simulated Process
+                      <Play className="w-3 h-3" /> Start Simulation
                     </button>
                   )}
                 </div>
