@@ -42,6 +42,22 @@ Every pixel and metric displayed in NOVA OS is driven by the underlying simulati
 
 ---
 
+## 📸 Visual Showcase & Subsystem Tour
+
+| Desktop & System Monitor | Live Scheduler Gantt Chart |
+|:---:|:---:|
+| ![Desktop](docs/screenshots/01_desktop_main.png) | ![Scheduler](docs/screenshots/02_scheduler_gantt.png) |
+
+| Memory Analyzer & 64-Frame RAM | Banker's Algorithm & Deadlock Lab |
+|:---:|:---:|
+| ![Memory Analyzer](docs/screenshots/03_memory_analyzer.png) | ![Deadlock Lab](docs/screenshots/04_deadlock_lab.png) |
+
+| Disk Platter & Actuator Arm | Learning Mode ("Why Did This Happen?") |
+|:---:|:---:|
+| ![Disk Analyzer](docs/screenshots/05_disk_analyzer.png) | ![Learning Mode](docs/screenshots/07_learning_mode.png) |
+
+---
+
 ## 🚀 Key Subsystems & Features
 
 ### 1. Deterministic Virtual Clock & Controls
