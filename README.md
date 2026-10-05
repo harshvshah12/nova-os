@@ -1,17 +1,18 @@
 # NOVA OS — Simulated Operating System & Virtual Computer
 
-[![Tests](https://img.shields.io/badge/Vitest-44%20Passed-emerald)](file:///x:/Nova%20OS/src/tests)
+[![Tests](https://img.shields.io/badge/Vitest-57%20Passed-emerald)](file:///x:/Nova%20OS/src/tests)
 [![Architecture](https://img.shields.io/badge/Architecture-x86__64--inspired-cyan)](file:///x:/Nova%20OS/docs/ARCHITECTURE.md)
 [![Aesthetic](https://img.shields.io/badge/Aesthetic-Dark%20Obsidian%20Luxe-blue)](file:///x:/Nova%20OS)
 [![Determinism](https://img.shields.io/badge/PRNG-Mulberry32%20Seeded-purple)](file:///x:/Nova%20OS/src/simulation/runtime/Random.ts)
 [![Portability](https://img.shields.io/badge/Storage-USB%20Portable%20Edition-amber)](file:///x:/Nova%20OS/src/storage/PortableStorage.ts)
+[![Applications](https://img.shields.io/badge/Ecosystem-28%20Applications-teal)](file:///x:/Nova%20OS/src/simulation/applications/ApplicationRegistry.ts)
 
-**NOVA OS** is a fully simulated, deterministic, Linux-inspired computer and operating system. Built for advanced Operating Systems education, systems engineering analysis, university vivas, and research portfolios, it models real computer architecture principles from hardware interrupts and CPU register pipelines to user-space application execution.
+**NOVA OS** is a fully simulated, deterministic, Linux-inspired computer and desktop operating system. Built for advanced Operating Systems education, systems engineering analysis, university vivas, and research portfolios, it models real computer architecture principles from hardware interrupts and CPU register pipelines to user-space desktop applications.
 
 Every pixel and metric displayed in NOVA OS is driven by the underlying simulation engine:
 - If a CPU core shows **40% utilization**, that core actively computed 4 out of 10 instruction cycles.
 - If a **page fault** occurs, the MMU translated a 32-bit virtual address, detected `present = 0`, issued Exception 0x0E, blocked the process, and loaded a 4KB page frame into physical RAM (524,288 frames for 2048 MB) with disk/swap telemetry.
-- If a file is displayed in the File Manager, it exists with real inodes and Unix permissions in the Virtual File System.
+- If a file is displayed in the File Manager, it exists with real inodes and Unix permissions in the Virtual File System, supports automatic MIME file opening, and can be moved to or restored from `.Trash`.
 - If a **deadlock** is reported, Tarjan’s cycle detection algorithm found an authentic circular wait cycle in the Resource Allocation Graph.
 - If threads synchronize on a **Semaphore** or **Mutex**, classical Dijkstra wait/signal primitives govern the critical sections and blocked queues.
 
@@ -28,9 +29,12 @@ Every pixel and metric displayed in NOVA OS is driven by the underlying simulati
                                     ▼
 +-------------------------------------------------------------------------+
 |                         NOVA OS USER SPACE                              |
-|  Harsh's Project Hub, Bash Terminal, File Manager, System Monitor,      |
-|  Scheduler Lab, Memory Analyzer (4KB), Concurrency & Sync Lab,          |
-|  Deadlock Lab, Disk Analyzer, Network Monitor, Portable USB Edition     |
+|  28 Native Applications & Desktop Environment:                          |
+|  - NOVA Browser, File Manager, Software Center, Project Hub, Terminal   |
+|  - System Monitor, Process Manager, System Info, Help Docs, Notes       |
+|  - Document Viewer, Image Viewer, Media Player, Archive Manager         |
+|  - Scheduler Lab, Memory Analyzer (4KB), Concurrency Lab, Banker's Lab  |
+|  - Disk Elevator, Network Monitor, OS Scenarios, Download Manager       |
 +-------------------------------------------------------------------------+
                                     │  System Calls (trap / syscall)
                                     ▼
@@ -53,89 +57,73 @@ Every pixel and metric displayed in NOVA OS is driven by the underlying simulati
 
 ---
 
-## 📸 Visual Showcase & Subsystem Tour
+## 📸 Visual Showcase & Desktop Tour
 
-| Harsh's Project Hub (Live Process Launcher) | Concurrency & Synchronization Lab |
+| Desktop Overview & Live Multi-Window Multitasking | NOVA Sandboxed Web Browser |
 |:---:|:---:|
-| ![Project Hub](docs/screenshots/09-projects-hub.png) | ![Concurrency Lab](docs/screenshots/10-concurrency-lab.png) |
+| ![Desktop Overview](docs/screenshots/desktop_overview.png) | ![NOVA Browser](docs/screenshots/nova_browser.png) |
 
-| Dining Philosophers (Deadlock Prevention) | 4KB Paged Memory & MMU Translation |
+| File Manager (MIME Associations & Trash Recovery) | Graphical Software Center |
 |:---:|:---:|
-| ![Dining Philosophers](docs/screenshots/11-dining-philosophers.png) | ![Memory Analyzer](docs/screenshots/12-memory-analyzer-4kb.png) |
+| ![File Manager](docs/screenshots/file_manager.png) | ![Software Center](docs/screenshots/software_center.png) |
 
-| 8-Stage Animated Page Fault Pipeline | USB Portable Edition (/mnt/usb) |
+| 28-App Categorized Application Launcher | Harsh's Project Hub (Live Process Launcher) |
 |:---:|:---:|
-| ![Page Fault Pipeline](docs/screenshots/13-page-fault-pipeline.png) | ![USB Portable Mode](docs/screenshots/14-usb-portable-mode.png) |
+| ![App Launcher](docs/screenshots/app_launcher.png) | ![Project Hub](docs/screenshots/09-projects-hub.png) |
 
-| Desktop & System Monitor | Live Scheduler Gantt Chart |
+| Concurrency & Synchronization Lab | Dining Philosophers (Deadlock Prevention) |
 |:---:|:---:|
-| ![Desktop](docs/screenshots/01_desktop_main.png) | ![Scheduler](docs/screenshots/02_scheduler_gantt.png) |
+| ![Concurrency Lab](docs/screenshots/10-concurrency-lab.png) | ![Dining Philosophers](docs/screenshots/11-dining-philosophers.png) |
 
-| Banker's Algorithm & Deadlock Lab | Disk Platter & Actuator Arm |
+| 4KB Paged Memory & MMU Translation | 8-Stage Animated Page Fault Pipeline |
 |:---:|:---:|
-| ![Deadlock Lab](docs/screenshots/04_deadlock_lab.png) | ![Disk Analyzer](docs/screenshots/05_disk_analyzer.png) |
+| ![Memory Analyzer](docs/screenshots/12-memory-analyzer-4kb.png) | ![Page Fault Pipeline](docs/screenshots/13-page-fault-pipeline.png) |
+
+| Live Scheduler Gantt Chart | USB Portable Edition (/mnt/usb) |
+|:---:|:---:|
+| ![Scheduler](docs/screenshots/02_scheduler_gantt.png) | ![USB Portable Mode](docs/screenshots/14-usb-portable-mode.png) |
 
 ---
 
-## 🚀 Core Subsystems & Innovations
+## 🖥️ Preinstalled 28-Application Ecosystem
 
-### 1. Harsh's Project Hub & Simultaneous Real-World Launch
-- Native portfolio showcase presenting Harsh Shah's verified engineering systems:
-  - **Multi-Modal DeepFake Forensic Engine** (ViT-B/16 + 2D FFT Frequency Analysis)
-  - **Dynamic Hotel Room Pricing Engine** (XGBoost + RevPAR Revenue Optimization, live on Vercel)
-  - **VegaPod Hyperloop Telemetry & Control Suite** (100Hz CAN bus decoding, live on Vercel)
-  - **Musically Audio Streaming & Visualizer** (Web Audio API 60fps FFT spectrum, live on Vercel)
-  - **SENTINEL Financial Fraud Detection** (Real-time Isolation Forest, live on Vercel)
-  - **PenFight Web Physics Game** (2D rigid-body collision impulse engine, live on Vercel)
-  - **ParkSense Smart Parking IoT** (YOLOv8 + ESP32 MQTT Mesh)
-  - **ESP32-CAM TinyML Hand Gesture Recognizer** (Int8 Quantized CNN, 42ms edge latency)
-  - **DAA Graph Traversal & Maze Algorithm Laboratory** (Dijkstra, A*, BFS)
-  - **ConnectSphere Enterprise Workspace Platform** (CRDT Real-Time Collaboration)
-  - **NOVA OS** (Self-referential virtual computer simulation)
-- **Simultaneous Action ("Start Simulation & Launch")**:
-  - Automatically initializes or reuses the authentic simulated process in NOVA OS (PID, PCB, virtual pages count, CPU burst instructions).
-  - Simultaneously opens the actual project externally in a new browser tab (verified live Vercel deployment if active, otherwise verified GitHub repository).
-  - Graceful browser popup fallback with notification banner if blocked.
-  - Transparent execution boundaries: NOVA internal simulated CPU/RAM vs. external native browser execution.
-- **Deterministic Workload Profiles**:
-  - Process instruction streams are generated deterministically via seeded Mulberry32 PRNG (tensor matrix multiplications, CAN bus frames, XGBoost decision trees, FFT frequency spectrum calculations).
-- **VFS Storage**: All projects are stored under `/home/nova/projects/<slug>/` containing real code files, `README.md`, and metadata.
+Every application in NOVA OS is registered in the centralized [`ApplicationRegistry`](src/simulation/applications/ApplicationRegistry.ts) with strict workload profiles, memory allocation constraints, and process priority:
 
-### 2. Synchronization Lab (Classical Concurrency)
-- **Dijkstra Counting & Binary Semaphores**: Classical `wait()` / `P()` and `signal()` / `V()` with waiting queues.
-- **Mutual Exclusion Locks (Mutex)**: Strict PID ownership verification and handoff.
-- **Bounded Buffer Problem**: Producer-Consumer ring buffer with empty and full semaphores. Includes a "Vulnerable Mode" toggle to demonstrate race conditions and data corruption!
-- **Readers-Writers Problem**: Concurrent reader sharing with exclusive writer locking.
-- **Dining Philosophers**: 5 philosophers and shared fork mutexes with Asymmetric pickup deadlock-free execution vs. Greedy circular wait deadlock demonstration.
+### 1. System & Utilities
+- **Terminal (`/bin/sh`)**: Authentic shell with piping (`|`), output redirection (`>`, `>>`), signal sending (`kill -9`), and background job monitoring.
+- **File Manager**: Directory navigation with Places sidebar, breadcrumbs, search, new file/folder creation, MIME double-click dispatch, and `/home/nova/.Trash` recovery.
+- **Process Manager**: Real-time PCB inspector, state transitions (READY, RUNNING, BLOCKED, TERMINATED), nice values, and signal dispatch.
+- **System Monitor**: Live multi-core CPU meters, 4KB RAM usage breakdown, disk throughput, and network packet graphs.
+- **System Information**: Neofetch / Ubuntu style hardware overview (virtual CPU cores, 524,288 frame buffer, disk heads, network adapter, uptime).
+- **Settings**: Multi-tab configuration for CPU cores, appearance wallpapers (Dark Obsidian, Cyber Matrix, Deep Space, Tokyo Sunset), scheduling algorithms, and network parameters.
+- **Software Center**: GUI package manager with dependency checks, download simulation, and binary extraction to `/usr/bin/`.
+- **Package Manager (CLI)**: Low-level terminal package utility.
 
-### 3. Mathematical Virtual Memory & 4KB Paged Architecture
-- **Strict 4KB Page Standard**: Page size is strictly 4096 bytes ($2^{12}$).
-- **Address Breakdown**:
-  - Virtual Page Number (VPN) = $\lfloor \text{VA} / 4096 \rfloor$ (20 bits)
-  - Offset = $\text{VA} \pmod{4096}$ (12 bits)
-  - Physical Address = $(\text{Frame Number} \times 4096) + \text{Offset}$
-- **Hardware TLB Cache**: 16-entry high-speed translation cache with LRU eviction.
-- **Swap Space Backing**: Evicted dirty pages (`isModified = true`) are swapped out to simulated disk swap slots and swapped in upon subsequent fault.
-- **Interactive 8-Stage Page Fault Pipeline**: Step-by-step walkthrough of Exception 0x0E trap handling, process blocking, disk retrieval, frame mapping, and instruction restart.
+### 2. Internet & Networking
+- **NOVA Browser**: Multi-tab web browser with URL bar, history, bookmarks, child renderer processes (`browser-renderer-N`), simulated DNS resolution (`1.1.1.1`), TCP packet transmission, and real iframe sandboxing for verified web projects.
+- **Network Monitor**: Virtual `eth0` interface telemetry, packet transmission stream, and ICMP ping tool.
+- **Download Manager**: Real-time download queue tracking simulated TCP socket chunks and disk buffer flush.
 
-### 4. Deterministic Simulation Clock & Seeded PRNG
-- Driven by a deterministic **Mulberry32 32-bit PRNG** (`Random.ts`) seeded with `NOVA-2026-001`.
-- Completely reproducible execution cycles, disk seek trajectories, and network latency traces for academic verification.
-- **Speed Multipliers**: `0.1x`, `0.25x`, `0.5x`, `1.0x`, `2.0x`, `5.0x`, `10.0x` and single-tick stepping (`+10ms`).
+### 3. Productivity & Media
+- **Document Viewer**: Formatted specification reader and Markdown viewer with outline sidebar, zoom, and search.
+- **Text Editor**: Full-featured code and text editor with dirty buffer tracking, line numbers, and disk I/O track seeks.
+- **Quick Notes**: Desktop memo pad auto-saved to `/home/nova/Documents/notes.txt` with color themes.
+- **Calculator**: Desktop arithmetic calculator accessory.
+- **Calendar & Clock**: Live analog/digital clock, monthly calendar grid, countdown stopwatch timer, and system agenda.
+- **Help & Documentation**: Built-in comprehensive operating systems handbook, command reference, and architecture guide.
+- **Media Player**: Web Audio API frequency synthesizer with live 60fps canvas spectrum visualizer, playlist, and audio playback.
+- **Image Viewer**: Vector SVG and bitmap image viewer with zoom, rotation, and metadata inspector.
+- **Archive Manager**: Archive reader and creator supporting `.tar.gz` and `.zip` with real-time compression telemetry.
 
-### 5. Portable USB Storage Abstraction & Checkpoints
-- Interface-driven storage: `MemoryStorage`, `BrowserStorage`, and `PortableStorage`.
-- Simulates USB stick mounting to `/mnt/usb` with `autorun.inf`.
-- **System Checkpoint Snapshotting**: Captures user files, scheduler algorithm, memory replacement policy, and settings into portable `.json` bundles with 1-click import and export.
-
-### 6. CPU Scheduler & Multi-Core Execution
-- 7 classical scheduling algorithms: Round Robin (RR), FCFS, SJF, SRTF, Priority with Aging, MLQ, and MLFQ.
-- Streaming real-time canvas Gantt chart recording execution slices per virtual core.
-
-### 7. Virtual File System (VFS) & Linux Shell
-- Full Linux directory hierarchy (`/bin`, `/boot`, `/dev`, `/etc`, `/home/nova`, `/lib`, `/proc`, `/mnt/usb`, `/tmp`, `/var/log`).
-- Unix permissions (`rwxr-xr--`), Inodes, and dynamic `/proc` handlers (`cpuinfo`, `meminfo`, `uptime`, `scheduler`, `processes`, `version`).
-- Bash terminal with pipes (`|`), redirection (`>`, `>>`), history, and GNU utilities.
+### 4. Kernel Labs & Portfolio
+- **Harsh's Project Hub**: Showcase presenting Harsh Shah's verified software systems with simultaneous dual-action execution (spawns simulated process + opens live external project).
+- **Scheduler Lab**: Real-time Gantt chart comparing Round Robin, Shortest Job First, Priority with Aging, and MLFQ.
+- **Memory Analyzer**: 4KB paged virtual memory map with 524,288 physical frames, page table traversal, and TLB telemetry.
+- **Concurrency & Sync Lab**: Dijkstra counting semaphores, mutexes, bounded buffer, readers-writers, and dining philosophers.
+- **Banker's Lab**: Resource Allocation Graph (RAG), Tarjan cycle detector, and Edsger Dijkstra safety test.
+- **Disk Elevator**: Animated 200-track cylinder platter with SCAN, LOOK, and SSTF seek head scheduling.
+- **OS Scenarios Lab**: 1-click academic lab demonstrations simulating Thrashing, CPU Bursts, and Deadlocks.
+- **Event Timeline**: Chronological kernel interrupt and system call audit log.
 
 ---
 
@@ -149,19 +137,24 @@ npx vitest run
 ```
 
 ```text
+ ✓ src/tests/application_registry.test.ts (4 tests)
+ ✓ src/tests/desktop_ecosystem.test.ts (4 tests)
+ ✓ src/tests/vfs_trash.test.ts (5 tests)
  ✓ src/tests/random.test.ts (3 tests)
  ✓ src/tests/memory.test.ts (4 tests)
+ ✓ src/tests/memory_math.test.ts (4 tests)
  ✓ src/tests/sync.test.ts (4 tests)
- ✓ src/tests/vfs.test.ts (5 tests)
+ ✓ src/tests/project_runtime.test.ts (4 tests)
  ✓ src/tests/hardware.test.ts (6 tests)
  ✓ src/tests/scheduler.test.ts (4 tests)
+ ✓ src/tests/vfs.test.ts (5 tests)
  ✓ src/tests/shell.test.ts (4 tests)
  ✓ src/tests/storage.test.ts (3 tests)
  ✓ src/tests/kernel.test.ts (3 tests)
 
- Test Files  9 passed (9)
-      Tests  36 passed (36)
-   Duration  685ms
+ Test Files  14 passed (14)
+      Tests  57 passed (57)
+   Duration  732ms
 ```
 
 ---

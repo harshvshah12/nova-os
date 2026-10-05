@@ -106,8 +106,19 @@ export class VirtualFileSystem {
     this.mkdir('/etc', 755, 0, 0);
     this.mkdir('/home', 755, 0, 0);
     this.mkdir('/home/nova', 750, 1000, 1000);
+    this.mkdir('/home/nova/Desktop', 755, 1000, 1000);
+    this.mkdir('/home/nova/Documents', 755, 1000, 1000);
+    this.mkdir('/home/nova/Downloads', 755, 1000, 1000);
+    this.mkdir('/home/nova/Music', 755, 1000, 1000);
+    this.mkdir('/home/nova/Pictures', 755, 1000, 1000);
+    this.mkdir('/home/nova/Videos', 755, 1000, 1000);
+    this.mkdir('/home/nova/Templates', 755, 1000, 1000);
+    this.mkdir('/home/nova/Workspace', 755, 1000, 1000);
+    this.mkdir('/home/nova/.Trash', 700, 1000, 1000);
     this.mkdir('/home/guest', 750, 1001, 1001);
     this.mkdir('/lib', 755, 0, 0);
+    this.mkdir('/mnt', 755, 0, 0);
+    this.mkdir('/mnt/usb', 777, 0, 0);
     this.mkdir('/proc', 555, 0, 0);
     this.mkdir('/tmp', 777, 0, 0);
     this.mkdir('/usr', 755, 0, 0);
@@ -115,10 +126,10 @@ export class VirtualFileSystem {
     this.mkdir('/var', 755, 0, 0);
     this.mkdir('/var/log', 755, 0, 0);
 
-    // Initial files
+    // Initial files in /etc
     this.writeFile(
       '/etc/os-release',
-      `NAME="NOVA OS"\nVERSION="1.0.0 LTS"\nID=nova\nPRETTY_NAME="NOVA OS (Virtual Systems Architecture)"\nKERNEL="0.1.0-simulated-x86_64"`,
+      `NAME="NOVA OS"\nVERSION="2.4.0 LTS"\nID=nova\nPRETTY_NAME="NOVA OS (Virtual Systems Architecture)"\nKERNEL="0.1.0-simulated-x86_64"\nHOME_URL="https://github.com/harshvshah12/nova-os"`,
       0,
       0,
       644
@@ -133,11 +144,230 @@ export class VirtualFileSystem {
     );
 
     this.writeFile(
+      '/etc/hosts',
+      `127.0.0.1   localhost localhost.localdomain\n192.168.1.10 nova-system nova\n192.168.1.1  gateway.local\n`,
+      0,
+      0,
+      644
+    );
+
+    this.writeFile(
+      '/etc/resolv.conf',
+      `nameserver 1.1.1.1\nnameserver 8.8.8.8\noptions edns0\n`,
+      0,
+      0,
+      644
+    );
+
+    this.writeFile(
+      '/etc/fstab',
+      `# /etc/fstab: static file system information\n# <file system> <mount point>   <type>  <options>       <dump>  <pass>\n/dev/vda1       /               ext4    errors=remount-ro 0       1\n/dev/vda2       none            swap    sw              0       0\n/dev/vdb1       /mnt/usb        vfat    noauto,user,rw  0       0\n`,
+      0,
+      0,
+      644
+    );
+
+    this.writeFile(
+      '/etc/group',
+      `root:x:0:\nbin:x:1:\ndaemon:x:2:\nsys:x:3:\nadm:x:4:\nwheel:x:10:root,nova\nnova:x:1000:\nguest:x:1001:\n`,
+      0,
+      0,
+      644
+    );
+
+    this.writeFile(
       '/etc/passwd',
       `root:x:0:0:root:/root:/bin/bash\nnova:x:1000:1000:Nova User:/home/nova:/bin/bash\nguest:x:1001:1001:Guest User:/home/guest:/bin/bash\n`,
       0,
       0,
       644
+    );
+
+    // Initial files in /home/nova/Desktop
+    this.writeFile(
+      '/home/nova/Desktop/Welcome.txt',
+      `Welcome to NOVA OS Desktop Environment!\nDouble-click any file to open it in its default associated application:\n- Text files -> Text Editor\n- Images -> Image Viewer\n- Documents -> Document Viewer\n- Audio -> Media Player\n- Web links -> NOVA Browser\n`,
+      1000,
+      1000,
+      644
+    );
+
+    this.writeFile(
+      '/home/nova/Desktop/Harsh_Portfolio.url',
+      `https://github.com/harshvshah12/nova-os\n`,
+      1000,
+      1000,
+      644
+    );
+
+    // Initial files in /home/nova/Documents
+    this.writeFile(
+      '/home/nova/Documents/welcome.txt',
+      `=======================================================\nWELCOME TO NOVA OS\nA Full-Scale Virtual Operating System Simulation\n=======================================================\n\nFeatures:\n- Deterministic Multi-Core CPU & Event Clock\n- Real CPU Schedulers: RR, FCFS, SJF, SRTF, Priority, MLFQ\n- 4KB Paged Virtual Memory (524,288 Physical Frames for 2048 MB)\n- MMU Address Translation & 8-Stage Page Fault Pipeline\n- Elevator Disk Platter Seek Scheduler (SCAN, LOOK, SSTF)\n- Authentic Linux VFS with Unix permissions and dynamic /proc\n- Concurrency Deadlock Detection & Banker's Algorithm\n- Integrated NOVA Browser with network packet simulation\n\nTry running 'help' or 'run' in the terminal!\n`,
+      1000,
+      1000,
+      644
+    );
+
+    this.writeFile(
+      '/home/nova/Documents/NOVA_OS_Guide.md',
+      `# NOVA OS Comprehensive Architecture & User Manual
+
+## 1. Virtual Hardware Specification
+- **CPU**: 4 Cores @ 2400 MHz (Configurable 1 to 8 Cores)
+- **RAM**: 2048 MB (524,288 Physical Frames x 4KB standard x86_64 paged memory)
+- **Disk**: 20 GB Virtual Cylinder Disk (200 tracks, SCAN/LOOK/SSTF algorithms)
+- **Network**: eth0 (192.168.1.10, Gateway 192.168.1.1)
+
+## 2. Core Subsystems
+- **CPU Scheduling**: Preemptive Round Robin (quantum 10 ticks), SJF, SRTF, MLFQ.
+- **Virtual Memory & MMU**: 32-bit address space decomposed into 20-bit VPN and 12-bit offset. Hardware TLB cache (16 slots).
+- **Concurrency**: Classical Dijkstra Counting Semaphores and Mutex locks.
+- **Deadlock Prevention**: Edsger Dijkstra Banker's Algorithm and Tarjan's cycle detection.
+`,
+      1000,
+      1000,
+      644
+    );
+
+    this.writeFile(
+      '/home/nova/Documents/system-notes.txt',
+      `Meeting notes: Review scheduling quantum benchmarks. RR quantum of 10 ticks delivers optimal responsiveness without excessive context switch overhead.\n`,
+      1000,
+      1000,
+      644
+    );
+
+    this.writeFile(
+      '/home/nova/Documents/notes.txt',
+      `Quick ideas for upcoming kernel enhancements:\n- Add shared memory IPC segment\n- Integrate dynamic packet filter table\n`,
+      1000,
+      1000,
+      644
+    );
+
+    // Initial files in /home/nova/Downloads
+    this.writeFile(
+      '/home/nova/Downloads/dataset_sample.csv',
+      `transaction_id,amount,merchant_category,is_fraud,latency_ms\nTX1001,42.50,dining,0,12\nTX1002,1250.00,electronics,1,45\nTX1003,15.20,grocery,0,8\nTX1004,890.00,travel,0,22\nTX1005,4200.00,crypto_transfer,1,38\n`,
+      1000,
+      1000,
+      644
+    );
+
+    this.writeFile(
+      '/home/nova/Downloads/kernel_patch_v1.0.tar.gz',
+      `[SIMULATED BINARY ARCHIVE: NOVA Kernel Patch v1.0.4 - gzip compressed data]\n`,
+      1000,
+      1000,
+      644
+    );
+
+    // Initial files in /home/nova/Pictures
+    this.writeFile(
+      '/home/nova/Pictures/nova_logo.svg',
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <circle cx="50" cy="50" r="45" fill="#0D1322" stroke="#38BDF8" stroke-width="4"/>
+  <polygon points="50,20 75,70 25,70" fill="none" stroke="#34D399" stroke-width="4"/>
+  <circle cx="50" cy="50" r="10" fill="#38BDF8"/>
+</svg>`,
+      1000,
+      1000,
+      644
+    );
+
+    this.writeFile(
+      '/home/nova/Pictures/wallpaper_dark_obsidian.svg',
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <defs>
+    <radialGradient id="grad" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#0E3854" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#070A11" stop-opacity="1"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#grad)"/>
+  <circle cx="400" cy="300" r="180" fill="none" stroke="#38BDF8" stroke-opacity="0.15" stroke-dasharray="10 5"/>
+</svg>`,
+      1000,
+      1000,
+      644
+    );
+
+    // Initial files in /home/nova/Music
+    this.writeFile(
+      '/home/nova/Music/ambient_cyberpunk_synth.wav',
+      `[SIMULATED WAV AUDIO FILE: Sample Rate 44.1kHz, Channels 2, Bits 16, Duration 03:24, Artist: Harsh Shah]\n`,
+      1000,
+      1000,
+      644
+    );
+
+    this.writeFile(
+      '/home/nova/Music/lofi_kernel_beats.mp3',
+      `[SIMULATED MP3 AUDIO FILE: 320 kbps CBR, ID3v2 Track "Lofi Kernel Scheduling Beats", Album "NOVA OS Sessions"]\n`,
+      1000,
+      1000,
+      644
+    );
+
+    // Initial files in /home/nova/Videos
+    this.writeFile(
+      '/home/nova/Videos/deepfake_detection_demo.mp4',
+      `[SIMULATED MP4 VIDEO: Codec H.264/AAC, Resolution 1920x1080, Duration 01:15, Title: Dual-Domain ViT Detection Demo]\n`,
+      1000,
+      1000,
+      644
+    );
+
+    // Initial files in /home/nova/Templates
+    this.writeFile(
+      '/home/nova/Templates/c_program_template.c',
+      `#include <stdio.h>\n#include <unistd.h>\n\nint main(int argc, char *argv[]) {\n    printf("Hello from NOVA OS process (PID: %d)\\n", getpid());\n    return 0;\n}\n`,
+      1000,
+      1000,
+      644
+    );
+
+    this.writeFile(
+      '/home/nova/Templates/bash_script_template.sh',
+      `#!/bin/bash\n# NOVA OS Automation Script\necho "Running system diagnostics..."\ntop\ncat /proc/cpuinfo\n`,
+      1000,
+      1000,
+      755
+    );
+
+    // Initial files in /home/nova/Workspace
+    this.writeFile(
+      '/home/nova/Workspace/hello_world.c',
+      `#include <stdio.h>\n\nint main() {\n    printf("NOVA OS Virtual Computer online.\\n");\n    return 0;\n}\n`,
+      1000,
+      1000,
+      644
+    );
+
+    this.writeFile(
+      '/home/nova/Workspace/scratch.txt',
+      `Active tasks for the semester viva:\n1. Demonstrate 4KB paging and 8-stage page fault pipeline\n2. Show dining philosophers asymmetric vs greedy deadlock\n3. Launch verified external project from Project Hub\n`,
+      1000,
+      1000,
+      644
+    );
+
+    // Initial files in /home/nova/.Trash (Supporting Trash & Recovery)
+    this.writeFile(
+      '/home/nova/.Trash/deprecated_config.bak',
+      `# Deprecated configuration backup\nSCHEDULER_OLD="FCFS"\nRAM_FRAMES_OLD="64"\n`,
+      1000,
+      1000,
+      600
+    );
+
+    this.writeFile(
+      '/home/nova/.Trash/debug_trace.log',
+      `[DEBUG TRACE] Early boot test log entry - safely marked for deletion.\n`,
+      1000,
+      1000,
+      600
     );
 
     this.writeFile(
@@ -179,6 +409,9 @@ export class VirtualFileSystem {
         workloadType: project.workloadType,
         memoryMb: project.memoryMb,
         githubUrl: project.githubUrl,
+        liveUrl: project.liveUrl,
+        launchUrl: project.launchUrl,
+        launchType: project.launchType,
       };
       this.writeFile(
         `${projDir}/meta.json`,
@@ -189,9 +422,50 @@ export class VirtualFileSystem {
       );
     }
 
+    // System logs in /var/log
     this.writeFile(
       '/var/log/kernel.log',
-      `[00:00.000] kernel: Initializing virtual hardware and CPU cores...\n[00:00.010] kernel: VFS mounted root filesystem (ext4-sim)\n`,
+      `[00:00.000] kernel: Initializing virtual hardware and CPU cores...\n[00:00.010] kernel: VFS mounted root filesystem (ext4-sim)\n[00:00.020] kernel: MMU 4KB paged virtual memory initialized (524,288 physical frames)\n[00:00.030] kernel: Preemptive scheduler active (RR quantum = 10 ticks)\n`,
+      0,
+      0,
+      640
+    );
+
+    this.writeFile(
+      '/var/log/system.log',
+      `[00:00.040] systemd[1]: Starting system daemons (loggerd, networkd, schedulerd)...\n[00:00.050] systemd[1]: Reached target Graphical Interface.\n`,
+      0,
+      0,
+      640
+    );
+
+    this.writeFile(
+      '/var/log/auth.log',
+      `[00:00.060] login[102]: User nova logged in on tty1 (UID 1000, GID 1000)\n`,
+      0,
+      0,
+      600
+    );
+
+    this.writeFile(
+      '/var/log/scheduler.log',
+      `[00:00.070] sched: Algorithm initialized to Round Robin (RR)\n`,
+      0,
+      0,
+      640
+    );
+
+    this.writeFile(
+      '/var/log/memory.log',
+      `[00:00.080] mmu: Hardware TLB cache enabled (16 slots, LRU replacement)\n`,
+      0,
+      0,
+      640
+    );
+
+    this.writeFile(
+      '/var/log/network.log',
+      `[00:00.090] net: Virtual interface eth0 link UP (192.168.1.10/24)\n`,
       0,
       0,
       640
@@ -209,6 +483,7 @@ export class VirtualFileSystem {
     this.createProcFile('uptime');
     this.createProcFile('scheduler');
     this.createProcFile('version');
+    this.createProcFile('net');
   }
 
   private createInodeRecord(
@@ -520,6 +795,98 @@ export class VirtualFileSystem {
     );
 
     return true;
+  }
+
+  public moveFile(
+    srcPath: string,
+    destPath: string,
+    user: { uid: number; gid: number; isRoot: boolean } = { uid: 0, gid: 0, isRoot: true },
+    timestamp: SimulationTime = 0
+  ): boolean {
+    const src = this.resolvePath(srcPath);
+    const dest = this.resolvePath(destPath);
+    if (!src || !src.parent || !src.target || !dest || !dest.parent) return false;
+
+    const srcInode = this.inodes.get(src.target.inodeId);
+    const srcParentInode = this.inodes.get(src.parent.inodeId);
+    const destParentInode = this.inodes.get(dest.parent.inodeId);
+
+    if (srcParentInode && !this.checkPermission(srcParentInode, user, 'w')) return false;
+    if (destParentInode && !this.checkPermission(destParentInode, user, 'w')) return false;
+
+    src.parent.children.delete(src.baseName);
+    src.target.name = dest.baseName;
+    dest.parent.children.set(dest.baseName, src.target);
+
+    if (srcInode) {
+      srcInode.modifiedAt = timestamp;
+    }
+
+    this.eventBus?.emit(
+      'FILE_CREATE',
+      'filesystem',
+      'VFS',
+      `Moved ${srcPath} to ${destPath}`,
+      timestamp,
+      { metadata: { srcPath, destPath } }
+    );
+
+    return true;
+  }
+
+  public createDirectory(
+    path: string,
+    uid: number = 0,
+    gid: number = 0,
+    permissionsOctal: number = 755,
+    timestamp: SimulationTime = 0
+  ): boolean {
+    return this.mkdir(path, permissionsOctal, uid, gid, timestamp);
+  }
+
+  public trashFile(
+    path: string,
+    user: { uid: number; gid: number; isRoot: boolean } = { uid: 0, gid: 0, isRoot: true },
+    timestamp: SimulationTime = 0
+  ): boolean {
+    const resolved = this.resolvePath(path);
+    if (!resolved || !resolved.target) return false;
+
+    // Ensure .Trash directory exists
+    if (!this.findNode('/home/nova/.Trash')) {
+      this.mkdir('/home/nova/.Trash', 700, 1000, 1000);
+    }
+
+    const trashDest = `/home/nova/.Trash/${resolved.baseName}`;
+    return this.moveFile(path, trashDest, user, timestamp);
+  }
+
+  public restoreTrashFile(
+    trashFileName: string,
+    destDir: string = '/home/nova/Documents',
+    user: { uid: number; gid: number; isRoot: boolean } = { uid: 0, gid: 0, isRoot: true },
+    timestamp: SimulationTime = 0
+  ): boolean {
+    const srcPath = `/home/nova/.Trash/${trashFileName}`;
+    const destPath = `${destDir}/${trashFileName}`;
+    return this.moveFile(srcPath, destPath, user, timestamp);
+  }
+
+  public emptyTrash(
+    user: { uid: number; gid: number; isRoot: boolean } = { uid: 0, gid: 0, isRoot: true },
+    timestamp: SimulationTime = 0
+  ): number {
+    const trashNode = this.findNode('/home/nova/.Trash');
+    if (!trashNode) return 0;
+
+    let deletedCount = 0;
+    const names = Array.from(trashNode.children.keys());
+    for (const name of names) {
+      if (this.deleteFile(`/home/nova/.Trash/${name}`, user, timestamp)) {
+        deletedCount++;
+      }
+    }
+    return deletedCount;
   }
 
   public listDirectory(

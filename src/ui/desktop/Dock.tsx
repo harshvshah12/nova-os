@@ -23,6 +23,10 @@ import {
   Settings,
   FolderGit2,
   Utensils,
+  Globe,
+  ShoppingBag,
+  Music,
+  BookOpen
 } from 'lucide-react';
 
 interface DockItem {
@@ -34,18 +38,18 @@ interface DockItem {
 
 const DOCK_ITEMS: DockItem[] = [
   { appId: 'project-hub', label: "Harsh's Projects", icon: FolderGit2, color: '#38BDF8' },
-  { appId: 'terminal', label: 'Terminal', icon: Terminal, color: '#06B6D4' },
+  { appId: 'browser', label: 'NOVA Browser', icon: Globe, color: '#06B6D4' },
+  { appId: 'file-manager', label: 'File Manager', icon: Folder, color: '#F59E0B' },
+  { appId: 'software-center', label: 'Software Center', icon: ShoppingBag, color: '#A855F7' },
+  { appId: 'terminal', label: 'Terminal', icon: Terminal, color: '#10B981' },
   { appId: 'system-monitor', label: 'System Monitor', icon: Activity, color: '#34D399' },
   { appId: 'process-manager', label: 'Process Manager', icon: Cpu, color: '#F472B6' },
-  { appId: 'scheduler-visualizer', label: 'Scheduler', icon: GitCommit, color: '#FBBF24' },
-  { appId: 'memory-analyzer', label: 'Memory Analyzer', icon: Layers, color: '#A78BFA' },
+  { appId: 'scheduler-visualizer', label: 'Scheduler Lab', icon: GitCommit, color: '#FBBF24' },
+  { appId: 'memory-analyzer', label: 'Memory / Paging', icon: Layers, color: '#A78BFA' },
   { appId: 'sync-lab', label: 'Concurrency Lab', icon: Utensils, color: '#EC4899' },
-  { appId: 'deadlock-lab', label: 'Deadlock Lab', icon: AlertTriangle, color: '#EF4444' },
-  { appId: 'disk-analyzer', label: 'Disk Platter', icon: HardDrive, color: '#FB923C' },
-  { appId: 'file-manager', label: 'File Manager', icon: Folder, color: '#F59E0B' },
-  { appId: 'network-monitor', label: 'Network Monitor', icon: Wifi, color: '#818CF8' },
-  { appId: 'os-scenarios', label: 'OS Scenarios', icon: PlayCircle, color: '#10B981' },
-  { appId: 'settings', label: 'Settings', icon: Settings, color: '#64748B' },
+  { appId: 'media-player', label: 'Media Player', icon: Music, color: '#F43F5E' },
+  { appId: 'notes', label: 'Quick Notes', icon: FileText, color: '#EAB308' },
+  { appId: 'settings', label: 'Settings', icon: Settings, color: '#94A3B8' },
 ];
 
 export const Dock: React.FC = () => {

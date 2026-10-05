@@ -14,8 +14,10 @@ import type {
   DiskSchedulingAlgorithm,
   KernelEvent,
 } from '../simulation/types';
+import { APPLICATION_REGISTRY, getAppForFile } from '../simulation/applications/ApplicationRegistry';
 
 export type OperatingMode = 'NORMAL' | 'LEARNING' | 'DEBUG';
+export type WallpaperId = 'dark-obsidian' | 'cyber-matrix' | 'deep-space' | 'sunset-neon';
 
 interface OsStoreState {
   // Kernel Instance (Singleton)
@@ -29,6 +31,9 @@ interface OsStoreState {
   formattedTime: string;
   isRunning: boolean;
   speed: ClockSpeed;
+
+  // Appearance & Desktop Customization
+  wallpaper: WallpaperId;
 
   // Window Manager
   windows: WindowState[];
@@ -50,12 +55,14 @@ interface OsStoreState {
   shutdownSystem: () => void;
   restartSystem: () => void;
   setOperatingMode: (mode: OperatingMode) => void;
+  setWallpaper: (wallpaper: WallpaperId) => void;
   toggleSimulation: () => void;
   stepTick: (ticks?: number) => void;
   setSpeed: (speed: ClockSpeed) => void;
 
   // Window Management Actions
   openWindow: (appId: AppId, title?: string, customData?: any) => string;
+  openFile: (filePath: string) => string | null;
   closeWindow: (id: string) => void;
   minimizeWindow: (id: string) => void;
   maximizeWindow: (id: string) => void;
@@ -84,18 +91,29 @@ const DEFAULT_WINDOWS_CONFIG: Record<
   'process-manager': { title: 'Process Manager', icon: 'Cpu', width: 800, height: 520 },
   'memory-analyzer': { title: 'Memory Analyzer', icon: 'Layers', width: 820, height: 540 },
   'scheduler-visualizer': { title: 'Scheduler Visualizer', icon: 'GitCommit', width: 840, height: 540 },
-  'file-manager': { title: 'File Manager', icon: 'Folder', width: 720, height: 480 },
+  'file-manager': { title: 'File Manager', icon: 'Folder', width: 780, height: 520 },
   'disk-analyzer': { title: 'Disk Platter Analyzer', icon: 'HardDrive', width: 760, height: 500 },
   'network-monitor': { title: 'Network Monitor', icon: 'Wifi', width: 720, height: 480 },
-  'text-editor': { title: 'Text Editor', icon: 'FileText', width: 640, height: 440 },
+  'text-editor': { title: 'Text Editor', icon: 'FileText', width: 680, height: 480 },
   calculator: { title: 'Calculator', icon: 'Hash', width: 320, height: 420 },
-  settings: { title: 'Settings', icon: 'Settings', width: 640, height: 480 },
+  settings: { title: 'Settings', icon: 'Settings', width: 680, height: 500 },
   'package-manager': { title: 'Package Manager', icon: 'Box', width: 680, height: 460 },
   'deadlock-lab': { title: "Deadlock & Banker's Lab", icon: 'AlertTriangle', width: 820, height: 540 },
   'event-timeline': { title: 'Event Timeline', icon: 'Clock', width: 740, height: 480 },
   'os-scenarios': { title: 'OS Demonstration Lab', icon: 'PlayCircle', width: 760, height: 500 },
-  'project-hub': { title: "Harsh's Project Hub", icon: 'FolderGit2', width: 860, height: 560 },
+  'project-hub': { title: "Harsh's Project Hub", icon: 'FolderGit2', width: 880, height: 580 },
   'sync-lab': { title: 'Concurrency & Sync Lab', icon: 'Utensils', width: 840, height: 550 },
+  browser: { title: 'NOVA Browser', icon: 'Globe', width: 920, height: 600 },
+  'software-center': { title: 'Software Center', icon: 'ShoppingBag', width: 880, height: 560 },
+  'document-viewer': { title: 'Document Viewer', icon: 'BookOpen', width: 800, height: 550 },
+  'image-viewer': { title: 'Image Viewer', icon: 'Image', width: 680, height: 500 },
+  'media-player': { title: 'Media Player', icon: 'Music', width: 720, height: 480 },
+  'archive-manager': { title: 'Archive Manager', icon: 'Archive', width: 700, height: 480 },
+  'download-manager': { title: 'Download Manager', icon: 'Download', width: 700, height: 460 },
+  'system-info': { title: 'About NOVA OS', icon: 'ShieldCheck', width: 680, height: 520 },
+  'help-docs': { title: 'Help & Documentation', icon: 'BookOpen', width: 840, height: 550 },
+  calendar: { title: 'Calendar & Clock', icon: 'Calendar', width: 720, height: 480 },
+  notes: { title: 'Notes & Scratchpad', icon: 'FileText', width: 620, height: 460 },
 };
 
 export const useOsStore = create<OsStoreState>((set, get) => {
@@ -110,6 +128,8 @@ export const useOsStore = create<OsStoreState>((set, get) => {
     formattedTime: '00:00.000',
     isRunning: false,
     speed: 1.0,
+
+    wallpaper: 'dark-obsidian',
 
     windows: [],
     activeWindowId: null,
@@ -168,6 +188,10 @@ export const useOsStore = create<OsStoreState>((set, get) => {
       set({ operatingMode: mode });
     },
 
+    setWallpaper: (wallpaper) => {
+      set({ wallpaper });
+    },
+
     toggleSimulation: () => {
       const k = get().kernel;
       const isRunning = k.clock.toggle();
@@ -187,21 +211,29 @@ export const useOsStore = create<OsStoreState>((set, get) => {
     },
 
     openWindow: (appId, title, customData) => {
+      const appDef = APPLICATION_REGISTRY[appId];
       const conf = DEFAULT_WINDOWS_CONFIG[appId] || {
-        title: appId,
-        icon: 'Square',
-        width: 600,
-        height: 400,
+        title: appDef?.name || appId,
+        icon: appDef?.icon || 'Square',
+        width: appDef?.defaultWidth || 600,
+        height: appDef?.defaultHeight || 400,
       };
 
       const existing = get().windows.find((w) => w.appId === appId);
       if (existing) {
-        // Un-minimize and bring to front if already open
+        // If window already open with specific customData, update it
         get().focusWindow(existing.id);
-        if (existing.isMinimized) {
+        if (existing.isMinimized || customData) {
           set((state) => ({
             windows: state.windows.map((w) =>
-              w.id === existing.id ? { ...w, isMinimized: false } : w
+              w.id === existing.id
+                ? {
+                    ...w,
+                    isMinimized: false,
+                    title: title || w.title,
+                    customData: customData ? { ...w.customData, ...customData } : w.customData,
+                  }
+                : w
             ),
           }));
         }
@@ -217,8 +249,8 @@ export const useOsStore = create<OsStoreState>((set, get) => {
         appId,
         title: title || conf.title,
         icon: conf.icon,
-        x: Math.max(40, 100 + offset),
-        y: Math.max(30, 60 + offset),
+        x: Math.max(40, 80 + offset),
+        y: Math.max(30, 50 + offset),
         width: conf.width,
         height: conf.height,
         isMinimized: false,
@@ -228,13 +260,22 @@ export const useOsStore = create<OsStoreState>((set, get) => {
       };
 
       // Also create simulated process for this application window!
+      const workloadType = appDef?.workloadProfile.workloadType || 'MIXED';
       const proc = get().kernel.processManager.createProcess(
-        appId,
+        appDef?.processName || appId,
         `/${appId}`,
-        'MIXED',
+        workloadType,
         { timestamp: get().kernel.clock.getTime() }
       );
       newWindow.associatedPid = proc.getPid();
+
+      // Allocate process memory footprint if defined
+      if (appDef?.workloadProfile.memoryMb) {
+        get().kernel.memoryManager.allocateProcess(
+          proc.getPid(),
+          appDef.workloadProfile.memoryMb
+        );
+      }
 
       set((state) => ({
         windows: [...state.windows, newWindow],
@@ -243,6 +284,18 @@ export const useOsStore = create<OsStoreState>((set, get) => {
       }));
 
       return id;
+    },
+
+    openFile: (filePath: string) => {
+      const filename = filePath.split('/').pop() || filePath;
+      const app = getAppForFile(filename);
+      if (!app) {
+        get().showNotification(`No application associated with ${filename}`, 'warn');
+        return null;
+      }
+
+      const winTitle = `${app.name} — ${filename}`;
+      return get().openWindow(app.id, winTitle, { path: filePath });
     },
 
     closeWindow: (id) => {

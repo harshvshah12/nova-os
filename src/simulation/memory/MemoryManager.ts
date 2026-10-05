@@ -117,6 +117,14 @@ export class MemoryManager {
   }
 
   /**
+   * Allocate virtual address space for a process based on requested MB
+   */
+  public allocateProcess(pid: number, memoryMb: number): void {
+    const pages = Math.max(4, Math.ceil((memoryMb * 1024) / (this.ram.frameSizeBytes / 1024)));
+    this.initProcessAddressSpace(pid, pages);
+  }
+
+  /**
    * Release all frames and page table mappings for a terminated process
    */
   public freeProcessAddressSpace(pid: number, timestamp: SimulationTime): void {
