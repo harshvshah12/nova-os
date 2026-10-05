@@ -1,6 +1,7 @@
 // ============================================================================
 // NOVA OS — HARSH'S PROJECT HUB APPLICATION
 // Native showcase of Harsh Shah's engineering portfolio with live simulated processes
+// and verified real-world deployments / repositories.
 // ============================================================================
 
 import React, { useState, useEffect } from 'react';
@@ -12,11 +13,14 @@ import {
   ExternalLink,
   Play,
   FileCode,
-  Tag,
   CheckCircle,
   Eye,
   X,
   Search,
+  Globe,
+  AlertCircle,
+  Activity,
+  Terminal,
 } from 'lucide-react';
 
 export const ProjectHubApp: React.FC = () => {
@@ -26,8 +30,12 @@ export const ProjectHubApp: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [viewingFile, setViewingFile] = useState<{ title: string; filename: string; content: string } | null>(null);
-  const [lastLaunch, setLastLaunch] = useState<{ projectId: string; pid: number } | null>(null);
-  const [launchBlocked, setLaunchBlocked] = useState(false);
+  const [lastLaunch, setLastLaunch] = useState<{
+    project: PortfolioProject;
+    pid: number;
+    wasReused: boolean;
+  } | null>(null);
+  const [blockedProject, setBlockedProject] = useState<PortfolioProject | null>(null);
 
   useEffect(() => {
     const handle = setInterval(() => setTick((t) => t + 1), 300);
@@ -56,25 +64,46 @@ export const ProjectHubApp: React.FC = () => {
   });
 
   const handleStartSimulation = (project: PortfolioProject) => {
-    // Check if already running
+    // 1. Check if already running in NOVA simulation
     const existing = activeProcesses.find((p) => p.getName() === project.processName);
+    const wasReused = existing !== undefined;
 
-    // Reuse an already-running simulated process instead of duplicating it.
-    // The actual project must still open on every Start Simulation click.
-    const proc = existing ?? kernel.processManager.createProcess(
-      project.processName,
-      project.processName,
-      project.workloadType,
-      {
-        priority: project.priority,
-        timestamp: kernel.clock.getTime(),
-        virtualPagesCount: Math.ceil((project.memoryMb * 1024) / 4),
-      }
-    );
-    const targetUrl = (project as PortfolioProject & { launchUrl?: string }).launchUrl || project.githubUrl;
-    const opened = window.open(targetUrl, '_blank', 'noopener,noreferrer');
-    setLastLaunch({ projectId: project.id, pid: proc.getPid() });
-    setLaunchBlocked(opened === null);
+    // 2. Start or reuse the actual simulated process
+    const proc =
+      existing ??
+      kernel.processManager.createProcess(
+        project.processName,
+        project.processName,
+        project.workloadType,
+        {
+          priority: project.priority,
+          timestamp: kernel.clock.getTime(),
+          virtualPagesCount: Math.ceil((project.memoryMb * 1024) / 4),
+        }
+      );
+
+    // 3. Open the actual project externally in a new tab
+    const targetUrl = project.launchUrl || project.githubUrl;
+    let opened: Window | null = null;
+    try {
+      opened = window.open(targetUrl, '_blank', 'noopener,noreferrer');
+    } catch {
+      opened = null;
+    }
+
+    if (!opened || opened.closed || typeof opened.closed === 'undefined') {
+      // Browser popup blocked
+      setBlockedProject(project);
+    } else {
+      setBlockedProject(null);
+    }
+
+    setLastLaunch({
+      project,
+      pid: proc.getPid(),
+      wasReused,
+    });
+
     setTick((t) => t + 1);
   };
 
@@ -92,7 +121,7 @@ export const ProjectHubApp: React.FC = () => {
               </span>
             </div>
             <div className="text-[10px] text-slate-400">
-              Operating Systems, TinyML, Computer Vision & Scalable Architectures
+              Verified Production Repositories, Live Deployments & Deterministic Workload Simulations
             </div>
           </div>
         </div>
@@ -111,6 +140,50 @@ export const ProjectHubApp: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Execution Boundary Telemetry Banner */}
+      <div className="px-3 py-1.5 bg-[#090D17] border-b border-white/5 flex items-center justify-between flex-wrap gap-2 text-[10px] font-mono">
+        <div className="flex items-center gap-2 text-slate-400">
+          <Activity className="w-3.5 h-3.5 text-cyan-400" />
+          <span>
+            <strong className="text-slate-200">Simulation Boundary:</strong> Internal NOVA processes run on virtual CPU cores & 4KB paged RAM. External projects run natively in browser.
+          </span>
+        </div>
+        {lastLaunch && (
+          <div className="flex items-center gap-2 text-emerald-400">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+            <span>
+              {lastLaunch.wasReused ? 'Reused' : 'Started'} PID {lastLaunch.pid} ({lastLaunch.project.processName}) → Opened {lastLaunch.project.launchType === 'live' ? 'Live Deployment' : 'GitHub'}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Popup Blocked Notification Fallback */}
+      {blockedProject && (
+        <div className="px-3 py-2 bg-amber-950/40 border-b border-amber-500/30 flex items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2 text-amber-300">
+            <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+            <span>
+              Pop-up was blocked by your browser. Simulated process <strong className="font-mono text-white">PID {activeProcesses.find(p => p.getName() === blockedProject.processName)?.getPid() ?? 'OK'}</strong> is running! Click to open directly:
+            </span>
+            <a
+              href={blockedProject.launchUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="underline text-cyan-400 hover:text-cyan-300 font-semibold"
+            >
+              Open {blockedProject.title} ({blockedProject.launchType === 'live' ? 'Live Deployment' : 'GitHub'})
+            </a>
+          </div>
+          <button
+            onClick={() => setBlockedProject(null)}
+            className="text-slate-400 hover:text-slate-200 p-1"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
 
       {/* Category Filter Chips */}
       <div className="px-3 py-2 bg-[#0A0F1A] border-b border-white/5 flex items-center gap-1.5 overflow-x-auto">
@@ -134,6 +207,7 @@ export const ProjectHubApp: React.FC = () => {
         {filteredProjects.map((project) => {
           const runningProc = activeProcesses.find((p) => p.getName() === project.processName);
           const isRunning = runningProc !== undefined;
+          const pcb = runningProc?.getPcb();
 
           return (
             <div
@@ -150,6 +224,15 @@ export const ProjectHubApp: React.FC = () => {
                   <div>
                     <div className="text-sm font-bold text-slate-100 flex items-center gap-2">
                       {project.title}
+                      {project.launchType === 'live' ? (
+                        <span className="px-1.5 py-0.2 rounded text-[9px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                          <Globe className="w-2.5 h-2.5" /> LIVE DEMO
+                        </span>
+                      ) : (
+                        <span className="px-1.5 py-0.2 rounded text-[9px] font-mono bg-slate-800 text-slate-300 border border-white/10 flex items-center gap-1">
+                          <FolderGit2 className="w-2.5 h-2.5" /> REPOSITORY
+                        </span>
+                      )}
                     </div>
                     <div className="text-[11px] text-cyan-400 font-medium mt-0.5">
                       {project.tagline}
@@ -165,7 +248,7 @@ export const ProjectHubApp: React.FC = () => {
                   {project.summary}
                 </p>
 
-                {/* Benchmark Metrics */}
+                {/* Metrics */}
                 <div className="grid grid-cols-3 gap-1.5 p-2 rounded bg-[#090D17] border border-white/5 mb-3 font-mono text-[10px]">
                   {project.metrics.map((m, i) => (
                     <div key={i} className="text-center">
@@ -186,6 +269,21 @@ export const ProjectHubApp: React.FC = () => {
                     </span>
                   ))}
                 </div>
+
+                {/* Live Simulation Telemetry Box if Process is Running */}
+                {isRunning && pcb && (
+                  <div className="p-2 rounded bg-cyan-950/30 border border-cyan-500/30 mb-3 font-mono text-[10px] flex items-center justify-between text-cyan-300">
+                    <div className="flex items-center gap-2">
+                      <Terminal className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>PID {pcb.pid} ({pcb.state})</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span>Mem: {Math.round(pcb.memoryUsageBytes / (1024 * 1024))} MB</span>
+                      <span>Frames: {pcb.allocatedFrames.length}</span>
+                      <span className="text-emerald-400">Cycles: {pcb.cpuTime}</span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Bottom Simulated Specs & Actions */}
@@ -225,22 +323,35 @@ export const ProjectHubApp: React.FC = () => {
                     className="p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300"
                     title="Open GitHub Repository"
                   >
-                    <ExternalLink className="w-3.5 h-3.5" />
+                    <FolderGit2 className="w-3.5 h-3.5" />
                   </a>
 
-                  {/* Launch / Running Action */}
-                  {isRunning ? (
-                    <div className="px-2.5 py-1 rounded bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 font-mono text-[10px] flex items-center gap-1 font-semibold">
-                      <CheckCircle className="w-3 h-3 text-cyan-400 animate-pulse" /> PID {runningProc.getPid()} (RUNNING)
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => handleStartSimulation(project)}
-                      className="px-2.5 py-1 rounded bg-cyan-600 hover:bg-cyan-500 text-white font-mono text-[10px] flex items-center gap-1 font-semibold transition-colors"
-                    >
-                      <Play className="w-3 h-3" /> Start Simulation
-                    </button>
-                  )}
+                  {/* Combined Action: Start Simulation & Launch */}
+                  <button
+                    onClick={() => handleStartSimulation(project)}
+                    className={`px-3 py-1.5 rounded font-mono text-[10px] flex items-center gap-1.5 font-semibold transition-all duration-200 ${
+                      isRunning
+                        ? 'bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300'
+                        : 'bg-cyan-600 hover:bg-cyan-500 text-white shadow-md'
+                    }`}
+                    title={
+                      isRunning
+                        ? `Reuse running PID ${runningProc.getPid()} and reopen ${project.launchType === 'live' ? 'live site' : 'repository'}`
+                        : `Start NOVA process and open ${project.launchType === 'live' ? 'live site' : 'repository'}`
+                    }
+                  >
+                    {isRunning ? (
+                      <>
+                        <CheckCircle className="w-3 h-3 text-cyan-400 animate-pulse" />
+                        <span>PID {runningProc.getPid()} (Reopen {project.launchType === 'live' ? 'Live' : 'Repo'})</span>
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-3 h-3 fill-current" />
+                        <span>Start Simulation & Launch</span>
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
             </div>

@@ -76,8 +76,8 @@ export class MemoryManager {
   public getMetrics(): MemoryMetrics {
     return {
       totalFrames: this.ram.getFrameCount(),
-      usedFrames: this.ram.getUsedFrames().length,
-      freeFrames: this.ram.getFreeFrames().length,
+      usedFrames: this.ram.getUsedFrameCount(),
+      freeFrames: this.ram.getFreeFrameCount(),
       totalPageFaults: this.totalPageFaults,
       tlbHits: this.tlbHits,
       tlbMisses: this.tlbMisses,
@@ -290,15 +290,14 @@ export class MemoryManager {
     pageNumber: number,
     timestamp: SimulationTime
   ): number {
-    const freeFrames = this.ram.getFreeFrames();
+    const freeFrameNum = this.ram.findFreeFrame();
 
-    if (freeFrames.length > 0) {
+    if (freeFrameNum !== null) {
       // Free frame available!
-      const frame = freeFrames[0];
-      this.checkAndSwapIn(pid, pageNumber, frame.frameNumber, timestamp);
-      this.ram.allocateFrame(frame.frameNumber, pid, pageNumber, timestamp);
-      this.fifoQueue.push(frame.frameNumber);
-      return frame.frameNumber;
+      this.checkAndSwapIn(pid, pageNumber, freeFrameNum, timestamp);
+      this.ram.allocateFrame(freeFrameNum, pid, pageNumber, timestamp);
+      this.fifoQueue.push(freeFrameNum);
+      return freeFrameNum;
     }
 
     // No free frame available -> Must EVICT a frame!

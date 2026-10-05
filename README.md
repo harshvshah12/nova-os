@@ -1,6 +1,6 @@
 # NOVA OS — Simulated Operating System & Virtual Computer
 
-[![Tests](https://img.shields.io/badge/Vitest-36%20Passed-emerald)](file:///x:/Nova%20OS/src/tests)
+[![Tests](https://img.shields.io/badge/Vitest-44%20Passed-emerald)](file:///x:/Nova%20OS/src/tests)
 [![Architecture](https://img.shields.io/badge/Architecture-x86__64--inspired-cyan)](file:///x:/Nova%20OS/docs/ARCHITECTURE.md)
 [![Aesthetic](https://img.shields.io/badge/Aesthetic-Dark%20Obsidian%20Luxe-blue)](file:///x:/Nova%20OS)
 [![Determinism](https://img.shields.io/badge/PRNG-Mulberry32%20Seeded-purple)](file:///x:/Nova%20OS/src/simulation/runtime/Random.ts)
@@ -10,7 +10,7 @@
 
 Every pixel and metric displayed in NOVA OS is driven by the underlying simulation engine:
 - If a CPU core shows **40% utilization**, that core actively computed 4 out of 10 instruction cycles.
-- If a **page fault** occurs, the MMU translated a 32-bit virtual address, detected `present = 0`, issued Exception 0x0E, blocked the process, and loaded a 4KB page frame with disk/swap telemetry.
+- If a **page fault** occurs, the MMU translated a 32-bit virtual address, detected `present = 0`, issued Exception 0x0E, blocked the process, and loaded a 4KB page frame into physical RAM (524,288 frames for 2048 MB) with disk/swap telemetry.
 - If a file is displayed in the File Manager, it exists with real inodes and Unix permissions in the Virtual File System.
 - If a **deadlock** is reported, Tarjan’s cycle detection algorithm found an authentic circular wait cycle in the Resource Allocation Graph.
 - If threads synchronize on a **Semaphore** or **Mutex**, classical Dijkstra wait/signal primitives govern the critical sections and blocked queues.
@@ -45,7 +45,7 @@ Every pixel and metric displayed in NOVA OS is driven by the underlying simulati
                                     ▼
 +-------------------------------------------------------------------------+
 |                      NOVA OS VIRTUAL HARDWARE                           |
-|  Virtual Multi-Core CPU (1-8 Cores), Physical RAM (4KB Frames),         |
+|  Virtual Multi-Core CPU (1-8 Cores), Physical RAM (524,288 x 4KB),      |
 |  Virtual Cylinder Disk (200 Tracks), Virtual Network Adapter (eth0),   |
 |  Interrupt Controller & Deterministic Mulberry32 Seeded PRNG Clock      |
 +-------------------------------------------------------------------------+
@@ -79,18 +79,27 @@ Every pixel and metric displayed in NOVA OS is driven by the underlying simulati
 
 ## 🚀 Core Subsystems & Innovations
 
-### 1. Harsh's Project Hub & Filesystem Integration
-- Native portfolio showcase presenting Harsh Shah's engineering projects:
+### 1. Harsh's Project Hub & Simultaneous Real-World Launch
+- Native portfolio showcase presenting Harsh Shah's verified engineering systems:
   - **Multi-Modal DeepFake Forensic Engine** (ViT-B/16 + 2D FFT Frequency Analysis)
-  - **Dynamic Hotel Room Pricing Engine** (XGBoost + RevPAR Revenue Optimization)
-  - **ParkSense: Smart Parking IoT & Vision System** (YOLOv8 + ESP32 MQTT Mesh)
-  - **ESP32-CAM TinyML Hand Gesture Recognizer** (Int8 Quantized CNN, 42ms latency)
+  - **Dynamic Hotel Room Pricing Engine** (XGBoost + RevPAR Revenue Optimization, live on Vercel)
+  - **VegaPod Hyperloop Telemetry & Control Suite** (100Hz CAN bus decoding, live on Vercel)
+  - **Musically Audio Streaming & Visualizer** (Web Audio API 60fps FFT spectrum, live on Vercel)
+  - **SENTINEL Financial Fraud Detection** (Real-time Isolation Forest, live on Vercel)
+  - **PenFight Web Physics Game** (2D rigid-body collision impulse engine, live on Vercel)
+  - **ParkSense Smart Parking IoT** (YOLOv8 + ESP32 MQTT Mesh)
+  - **ESP32-CAM TinyML Hand Gesture Recognizer** (Int8 Quantized CNN, 42ms edge latency)
   - **DAA Graph Traversal & Maze Algorithm Laboratory** (Dijkstra, A*, BFS)
-  - **VegaPod Hyperloop Telemetry & Control Suite** (CAN bus telemetry decode)
   - **ConnectSphere Enterprise Workspace Platform** (CRDT Real-Time Collaboration)
-  - **NOVA OS** (Self-referential meta-simulation)
-- **Live Simulated Process Spawning**: Clicking "Launch Simulated Process" instantiates a real simulated process with authentic workload types (`CPU_BOUND`, `MIXED`, `IO_BOUND`, `MEMORY_INTENSIVE`), memory footprints, and CPU bursts that immediately appear across the entire OS.
-- **VFS Storage**: All projects are stored under `/home/nova/projects/<slug>/` containing real code files, `README.md`, and `meta.json`.
+  - **NOVA OS** (Self-referential virtual computer simulation)
+- **Simultaneous Action ("Start Simulation & Launch")**:
+  - Automatically initializes or reuses the authentic simulated process in NOVA OS (PID, PCB, virtual pages count, CPU burst instructions).
+  - Simultaneously opens the actual project externally in a new browser tab (verified live Vercel deployment if active, otherwise verified GitHub repository).
+  - Graceful browser popup fallback with notification banner if blocked.
+  - Transparent execution boundaries: NOVA internal simulated CPU/RAM vs. external native browser execution.
+- **Deterministic Workload Profiles**:
+  - Process instruction streams are generated deterministically via seeded Mulberry32 PRNG (tensor matrix multiplications, CAN bus frames, XGBoost decision trees, FFT frequency spectrum calculations).
+- **VFS Storage**: All projects are stored under `/home/nova/projects/<slug>/` containing real code files, `README.md`, and metadata.
 
 ### 2. Synchronization Lab (Classical Concurrency)
 - **Dijkstra Counting & Binary Semaphores**: Classical `wait()` / `P()` and `signal()` / `V()` with waiting queues.

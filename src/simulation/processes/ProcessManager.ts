@@ -45,7 +45,10 @@ export class ProcessManager {
     const pid = this.nextPid++;
     const timestamp = options?.timestamp ?? 0;
     const instructions =
-      options?.instructions ?? WorkloadGenerator.createInstructions(workloadType, 8);
+      options?.instructions ??
+      WorkloadGenerator.createProjectWorkload(name) ??
+      WorkloadGenerator.createProjectWorkload(command) ??
+      WorkloadGenerator.createInstructions(workloadType, 8);
 
     const process = new Process(pid, name, command, instructions, workloadType, {
       ...options,

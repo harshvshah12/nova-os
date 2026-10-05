@@ -386,11 +386,13 @@ export class Shell {
         const sleeping = processes.filter((p) => p.getState() === 'READY').length;
         const blocked = processes.filter((p) => p.getState() === 'BLOCKED').length;
 
+        const usedMemMb = Math.round((this.ram.getUsedFrameCount() * this.ram.getFrameSizeBytes()) / (1024 * 1024));
+        const freeMemMb = Math.max(0, this.ram.getTotalMb() - usedMemMb);
         const summary = [
           `top - ${this.clock.getFormattedTime()} up ${Math.floor(this.clock.getTime() / 1000)}s, 1 user, load: ${(this.cpu.getAverageUtilization() / 100).toFixed(2)}`,
           `Tasks: ${total} total, ${running} running, ${sleeping} sleeping, ${blocked} stopped`,
           `%Cpu(s): ${(this.cpu.getAverageUtilization()).toFixed(1)} us,  ${(100 - this.cpu.getAverageUtilization()).toFixed(1)} id`,
-          `MiB Mem : ${this.ram.getTotalMb()} total, ${this.ram.getFreeFrames().length * 32} free, ${this.ram.getUsedFrames().length * 32} used`,
+          `MiB Mem : ${this.ram.getTotalMb()} total, ${freeMemMb} free, ${usedMemMb} used`,
           '',
           '  PID USER      PR  NI    VIRT    RES  S  %CPU  %MEM     TIME+ COMMAND',
         ];
@@ -427,7 +429,7 @@ export class Shell {
 
       case 'free': {
         const total = this.ram.getTotalMb();
-        const used = Math.round((this.ram.getUsedFrames().length / (this.ram.getFrameCount() || 1)) * total);
+        const used = Math.round((this.ram.getUsedFrameCount() / (this.ram.getFrameCount() || 1)) * total);
         const free = total - used;
         const header = '               total        used        free      shared  buff/cache   available';
         const memLine = `Mem:        ${String(total).padStart(8, ' ')}M   ${String(used).padStart(8, ' ')}M   ${String(free).padStart(8, ' ')}M         0M          0M   ${String(free).padStart(8, ' ')}M`;

@@ -75,7 +75,7 @@ export class Kernel {
     this.clock = new SimulationClock();
     this.eventBus = new EventBus();
     this.cpu = new VirtualCpu(this.hardwareConfig.cores, this.hardwareConfig.coreFrequencyMhz);
-    this.ram = new VirtualRam(this.hardwareConfig.ramTotalMb, 64);
+    this.ram = new VirtualRam(this.hardwareConfig.ramTotalMb);
     this.disk = new VirtualDisk(this.hardwareConfig.diskSizeGb, 50);
     this.net = new VirtualNetworkAdapter(this.hardwareConfig.ipAddress, this.hardwareConfig.gateway);
 

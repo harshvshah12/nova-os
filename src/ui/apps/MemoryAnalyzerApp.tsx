@@ -1,7 +1,8 @@
 // ============================================================================
 // NOVA OS — MEMORY ANALYZER APPLICATION
-// 4KB Paged Virtual Memory, Physical Frame Buffer, MMU Address Translation,
-// TLB Hardware Cache, Swap Space Partition, and Interactive Page Fault Pipeline
+// 4KB Paged Virtual Memory (524,288 Physical Frames for 2048 MB RAM),
+// Physical Frame Inspector, 64-Segment Memory Map, MMU Address Translation,
+// TLB Hardware Cache, Swap Partition, and Interactive Page Fault Pipeline
 // ============================================================================
 
 import React, { useState, useEffect } from 'react';
@@ -12,11 +13,13 @@ import {
   Zap,
   HardDrive,
   Cpu,
-  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
   RefreshCw,
   Play,
   CheckCircle2,
   AlertTriangle,
+  Search,
 } from 'lucide-react';
 
 export const MemoryAnalyzerApp: React.FC = () => {
@@ -26,6 +29,10 @@ export const MemoryAnalyzerApp: React.FC = () => {
 
   // MMU Address Translation inputs
   const [inputAddress, setInputAddress] = useState<string>('0x00003064');
+
+  // Frame window pagination (showing 64 frames per page)
+  const [frameWindowStart, setFrameWindowStart] = useState<number>(0);
+  const [jumpFrameInput, setJumpFrameInput] = useState<string>('0');
 
   // Animated Page Fault Pipeline State
   const [activeFaultStep, setActiveFaultStep] = useState<number | null>(null);
@@ -38,10 +45,16 @@ export const MemoryAnalyzerApp: React.FC = () => {
 
   const ram = kernel.ram;
   const mm = kernel.memoryManager;
-  const frames = ram.getFrames();
+  const totalFrames = ram.getFrameCount();
   const metrics = mm.getMetrics();
   const tlbEntries = mm.getTlb();
   const processes = kernel.processManager.getActiveProcesses();
+
+  // Get bucketed overview (64 segments of 32MB each)
+  const bucketSummaries = ram.getBucketSummaries(64);
+
+  // Get the 64 frames in the current window
+  const windowFrames = ram.getFrameWindow(frameWindowStart, 64);
 
   // Selected process page table
   const effectivePid = selectedPid || (processes[0]?.getPid() ?? 1);
@@ -53,6 +66,25 @@ export const MemoryAnalyzerApp: React.FC = () => {
     : parseInt(inputAddress, 10) || 0;
 
   const translation = mm.translateVirtualAddress(parsedAddress, effectivePid);
+
+  // Jump to frame
+  const handleJumpFrame = () => {
+    const val = parseInt(jumpFrameInput, 10);
+    if (!isNaN(val) && val >= 0 && val < totalFrames) {
+      setFrameWindowStart(Math.floor(val / 64) * 64);
+    }
+  };
+
+  // Jump to process frames
+  const handleJumpToProcessFrames = (pid: number) => {
+    const procFrames = ram.getFramesByPid(pid);
+    if (procFrames.length > 0) {
+      const firstFrame = procFrames[0].frameNumber;
+      setFrameWindowStart(Math.floor(firstFrame / 64) * 64);
+      setJumpFrameInput(firstFrame.toString());
+    }
+    setSelectedPid(pid);
+  };
 
   // Trigger Step-by-Step Page Fault Walkthrough
   const handleTriggerPageFaultSimulation = () => {
@@ -67,7 +99,8 @@ export const MemoryAnalyzerApp: React.FC = () => {
         setActiveFaultStep(index + 1);
         if (index === 5) {
           // Perform real memory access at an unmapped address to mutate engine state
-          const syntheticUnmapped = (Math.max(...(pageTable ? Array.from(pageTable.keys()) : [0])) + 1) * 4096 + 0x42;
+          const syntheticUnmapped =
+            (Math.max(...(pageTable ? Array.from(pageTable.keys()) : [0]), 0) + 1) * 4096 + 0x42;
           mm.accessMemory(effectivePid, syntheticUnmapped, false, kernel.clock.getTime());
         }
         if (index === stepIntervals.length - 1) {
@@ -112,9 +145,21 @@ export const MemoryAnalyzerApp: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-4 font-mono text-[11px] flex-wrap">
-          <div>Page Size: <span className="text-cyan-400 font-bold">4 KB (4096B)</span></div>
-          <div>Page Faults: <span className="text-amber-400 font-bold">{metrics.totalPageFaults}</span></div>
-          <div>Replacements: <span className="text-red-400 font-bold">{metrics.pageReplacements}</span></div>
+          <div>
+            Total RAM:{' '}
+            <span className="text-cyan-400 font-bold">
+              {ram.getTotalMb()} MB ({totalFrames.toLocaleString()} Frames)
+            </span>
+          </div>
+          <div>
+            Page Size: <span className="text-cyan-400 font-bold">4 KB (4096B)</span>
+          </div>
+          <div>
+            Page Faults: <span className="text-amber-400 font-bold">{metrics.totalPageFaults}</span>
+          </div>
+          <div>
+            Replacements: <span className="text-red-400 font-bold">{metrics.pageReplacements}</span>
+          </div>
           <div>
             TLB Hit Ratio:{' '}
             <span className="text-emerald-400 font-bold">
@@ -135,24 +180,124 @@ export const MemoryAnalyzerApp: React.FC = () => {
       </div>
 
       <div className="p-3 grid grid-cols-1 lg:grid-cols-12 gap-3 flex-1">
-        {/* Left Column: Physical RAM Frame Grid */}
+        {/* Left Column: Physical RAM Map & 64-Frame Window */}
         <div className="lg:col-span-7 flex flex-col space-y-3">
+          {/* Segmented 64-Bucket Physical Memory Map (32 MB per segment) */}
           <div className="p-3 rounded-lg bg-[#0F1626]/80 border border-white/5 flex flex-col space-y-2">
             <div className="flex justify-between items-center text-slate-300 font-semibold text-xs">
-              <span>Physical RAM Frame Buffer ({frames.length} Frames × 4 KB = {frames.length * 4} KB)</span>
+              <span className="flex items-center gap-1.5">
+                <Layers className="w-3.5 h-3.5 text-cyan-400" />
+                Physical Address Space (64 Segments × 32 MB = 2,048 MB)
+              </span>
               <div className="flex items-center gap-3 font-mono text-[10px]">
-                <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 rounded bg-slate-800 border border-white/20" /> Free ({metrics.freeFrames})
+                <span className="text-slate-400">
+                  Allocated: <span className="text-cyan-400 font-bold">{metrics.usedFrames.toLocaleString()}</span> frames ({((metrics.usedFrames / (totalFrames || 1)) * 100).toFixed(2)}%)
                 </span>
-                <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 rounded bg-cyan-500" /> Allocated ({metrics.usedFrames})
+                <span className="text-slate-400">
+                  Free: <span className="text-emerald-400 font-bold">{metrics.freeFrames.toLocaleString()}</span> frames
                 </span>
               </div>
             </div>
 
-            {/* 8x8 Grid of 64 Frames */}
+            {/* 64 Segments Bar */}
+            <div className="grid grid-cols-16 sm:grid-cols-32 md:grid-cols-64 gap-0.5 p-1.5 bg-[#090D17] rounded border border-white/5">
+              {bucketSummaries.map((b) => {
+                const isWindowInBucket =
+                  frameWindowStart >= b.startFrame && frameWindowStart <= b.endFrame;
+
+                return (
+                  <div
+                    key={b.bucketIndex}
+                    onClick={() => {
+                      setFrameWindowStart(b.startFrame);
+                      setJumpFrameInput(b.startFrame.toString());
+                    }}
+                    className={`h-5 rounded-xs cursor-pointer transition-all duration-150 relative group ${
+                      isWindowInBucket ? 'ring-1 ring-cyan-400 z-10' : ''
+                    } ${
+                      b.usedFrames > 0
+                        ? 'bg-cyan-500 hover:bg-cyan-400'
+                        : 'bg-slate-800/80 hover:bg-slate-700'
+                    }`}
+                    style={{
+                      opacity: b.usedFrames > 0 ? Math.max(0.4, b.utilizationPercent / 100) : 0.25,
+                    }}
+                    title={`Segment #${b.bucketIndex}: Frames ${b.startFrame.toLocaleString()} - ${b.endFrame.toLocaleString()} (32 MB) | Used: ${b.usedFrames} frames (${b.utilizationPercent}%)`}
+                  />
+                );
+              })}
+            </div>
+            <div className="flex justify-between items-center text-[9px] font-mono text-slate-500">
+              <span>0x00000000 (0 MB)</span>
+              <span>1024 MB</span>
+              <span>0x7FFFFFFF (2048 MB)</span>
+            </div>
+          </div>
+
+          {/* 64-Frame Window Inspector */}
+          <div className="p-3 rounded-lg bg-[#0F1626]/80 border border-white/5 flex flex-col space-y-2">
+            <div className="flex justify-between items-center text-slate-300 font-semibold text-xs flex-wrap gap-2">
+              <div className="flex items-center gap-2">
+                <span>
+                  Physical Frame Window: Frames #{frameWindowStart.toLocaleString()} – #
+                  {(frameWindowStart + 63).toLocaleString()}
+                </span>
+                <span className="text-[10px] font-mono text-cyan-400">
+                  (0x{(frameWindowStart * 4096).toString(16).toUpperCase().padStart(8, '0')} - 0x
+                  {((frameWindowStart + 64) * 4096 - 1).toString(16).toUpperCase().padStart(8, '0')})
+                </span>
+              </div>
+
+              {/* Window Controls */}
+              <div className="flex items-center gap-1.5 font-mono text-[10px]">
+                <button
+                  onClick={() => {
+                    const prev = Math.max(0, frameWindowStart - 64);
+                    setFrameWindowStart(prev);
+                    setJumpFrameInput(prev.toString());
+                  }}
+                  disabled={frameWindowStart === 0}
+                  className="p-1 rounded bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-slate-200"
+                  title="Previous 64 Frames"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => {
+                    const next = Math.min(totalFrames - 64, frameWindowStart + 64);
+                    setFrameWindowStart(next);
+                    setJumpFrameInput(next.toString());
+                  }}
+                  disabled={frameWindowStart >= totalFrames - 64}
+                  className="p-1 rounded bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-slate-200"
+                  title="Next 64 Frames"
+                >
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+
+                <div className="flex items-center gap-1 ml-2">
+                  <span className="text-slate-400">Jump to F#:</span>
+                  <input
+                    type="number"
+                    value={jumpFrameInput}
+                    onChange={(e) => setJumpFrameInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleJumpFrame()}
+                    className="w-16 px-1.5 py-0.5 rounded bg-slate-900 border border-white/10 text-cyan-300 font-mono text-[10px] outline-none"
+                  />
+                  <button
+                    onClick={handleJumpFrame}
+                    className="p-1 rounded bg-cyan-600/30 hover:bg-cyan-600/50 text-cyan-300"
+                    title="Jump"
+                  >
+                    <Search className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* 8x8 Grid of the 64 Frames in Current Window */}
             <div className="grid grid-cols-8 gap-1.5 p-2 bg-[#090D17] rounded border border-white/5">
-              {frames.map((frame) => {
+              {windowFrames.map((frame) => {
                 const proc = frame.allocatedPid ? kernel.processManager.getProcess(frame.allocatedPid) : null;
                 const color = proc?.getPcb().color || '#38BDF8';
                 const isSelected = selectedPid === frame.allocatedPid;
@@ -160,7 +305,11 @@ export const MemoryAnalyzerApp: React.FC = () => {
                 return (
                   <div
                     key={frame.frameNumber}
-                    onClick={() => frame.allocatedPid && setSelectedPid(frame.allocatedPid)}
+                    onClick={() => {
+                      if (frame.allocatedPid) {
+                        setSelectedPid(frame.allocatedPid);
+                      }
+                    }}
                     className={`p-1 rounded text-center cursor-pointer transition-all duration-150 font-mono text-[10px] ${
                       frame.isFree
                         ? 'bg-slate-900 border border-white/5 text-slate-600 hover:border-slate-500'
@@ -169,11 +318,11 @@ export const MemoryAnalyzerApp: React.FC = () => {
                     style={!frame.isFree ? { backgroundColor: `${color}25`, borderColor: `${color}60` } : {}}
                     title={
                       frame.isFree
-                        ? `Frame ${frame.frameNumber}: Free (4 KB)`
-                        : `Frame ${frame.frameNumber}: PID ${frame.allocatedPid}, Virtual Page ${frame.pageNumber} (${frame.isDirty ? 'Dirty' : 'Clean'})`
+                        ? `Frame #${frame.frameNumber}: Free (4 KB) | Physical Addr: 0x${(frame.frameNumber * 4096).toString(16).toUpperCase()}`
+                        : `Frame #${frame.frameNumber}: PID ${frame.allocatedPid}, Virtual Page ${frame.pageNumber} (${frame.isDirty ? 'Dirty' : 'Clean'}) | Physical Addr: 0x${(frame.frameNumber * 4096).toString(16).toUpperCase()}`
                     }
                   >
-                    <div className="font-bold text-[9px] text-slate-400">F{frame.frameNumber}</div>
+                    <div className="font-bold text-[9px] text-slate-400 truncate">F{frame.frameNumber}</div>
                     <div className="text-[10px] font-semibold truncate" style={{ color }}>
                       {frame.isFree ? '—' : `P${frame.allocatedPid}`}
                     </div>
@@ -194,7 +343,7 @@ export const MemoryAnalyzerApp: React.FC = () => {
             <div className="flex justify-between items-center text-slate-200 font-semibold text-xs">
               <span className="flex items-center gap-1.5">
                 <Cpu className="w-4 h-4 text-cyan-400" />
-                MMU Address Translation (Paging Math)
+                MMU Address Translation (Paging Math: 4KB Pages)
               </span>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] text-slate-400 font-mono">Virtual Address:</span>
@@ -265,7 +414,7 @@ export const MemoryAnalyzerApp: React.FC = () => {
               <span>Page Table: PID {effectivePid}</span>
               <select
                 value={effectivePid}
-                onChange={(e) => setSelectedPid(Number(e.target.value))}
+                onChange={(e) => handleJumpToProcessFrames(Number(e.target.value))}
                 className="px-2 py-0.5 rounded bg-slate-900 border border-white/10 text-cyan-400 font-mono text-[11px]"
               >
                 {processes.map((p) => (
@@ -293,7 +442,19 @@ export const MemoryAnalyzerApp: React.FC = () => {
                       <tr key={pte.pageNumber} className="hover:bg-white/[0.02]">
                         <td className="py-1 text-slate-200">Page {pte.pageNumber}</td>
                         <td className="py-1 font-bold text-cyan-400">
-                          {pte.frameNumber !== null ? `Frame ${pte.frameNumber}` : '—'}
+                          {pte.frameNumber !== null ? (
+                            <button
+                              onClick={() => {
+                                setFrameWindowStart(Math.floor(pte.frameNumber! / 64) * 64);
+                                setJumpFrameInput(pte.frameNumber!.toString());
+                              }}
+                              className="hover:underline text-cyan-300"
+                            >
+                              Frame {pte.frameNumber}
+                            </button>
+                          ) : (
+                            '—'
+                          )}
                         </td>
                         <td className="py-1">
                           <span
@@ -345,7 +506,7 @@ export const MemoryAnalyzerApp: React.FC = () => {
             </div>
           </div>
 
-          {/* Interactive Page Fault Pipeline Animator (Section 7) */}
+          {/* Interactive Page Fault Pipeline Animator */}
           <div className="p-3 rounded-lg bg-[#0F1626]/80 border border-white/5 space-y-2">
             <div className="flex justify-between items-center text-slate-200 font-semibold text-xs">
               <span className="flex items-center gap-1.5">
