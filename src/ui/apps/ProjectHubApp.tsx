@@ -58,12 +58,10 @@ export const ProjectHubApp: React.FC = () => {
   const handleStartSimulation = (project: PortfolioProject) => {
     // Check if already running
     const existing = activeProcesses.find((p) => p.getName() === project.processName);
-    if (existing) {
-      return;
-    }
 
-    // Start the authentic NOVA simulated process.
-    const proc = kernel.processManager.createProcess(
+    // Reuse an already-running simulated process instead of duplicating it.
+    // The actual project must still open on every Start Simulation click.
+    const proc = existing ?? kernel.processManager.createProcess(
       project.processName,
       project.processName,
       project.workloadType,
