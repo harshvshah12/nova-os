@@ -24,6 +24,8 @@ import {
   Hash,
   Search,
   X,
+  FolderGit2,
+  Utensils,
 } from 'lucide-react';
 
 interface AppLauncherProps {
@@ -41,11 +43,13 @@ interface AppInfo {
 }
 
 const APPS_LIST: AppInfo[] = [
-  { appId: 'terminal', name: 'Terminal', category: 'System', description: 'Bash-inspired shell with pipes, redirection, and signals', icon: Terminal, color: '#38BDF8' },
+  { appId: 'project-hub', name: "Harsh's Projects", category: 'Portfolio', description: 'Showcase of DeepFake AI, ESP32 TinyML, and Systems architectures', icon: FolderGit2, color: '#38BDF8' },
+  { appId: 'sync-lab', name: 'Concurrency Lab', category: 'Kernel Lab', description: 'Semaphores, Mutexes, Bounded Buffer & Dining Philosophers', icon: Utensils, color: '#EC4899' },
+  { appId: 'terminal', name: 'Terminal', category: 'System', description: 'Bash-inspired shell with pipes, redirection, and signals', icon: Terminal, color: '#06B6D4' },
   { appId: 'system-monitor', name: 'System Monitor', category: 'Telemetry', description: 'Real-time multi-core CPU, RAM, and I/O graphs', icon: Activity, color: '#34D399' },
   { appId: 'process-manager', name: 'Process Manager', category: 'System', description: 'Inspect PCB table, process trees, and send signals', icon: Cpu, color: '#F472B6' },
   { appId: 'scheduler-visualizer', name: 'Scheduler', category: 'Kernel Lab', description: 'Live Gantt chart, queue pipelines, RR/SJF/MLFQ', icon: GitCommit, color: '#FBBF24' },
-  { appId: 'memory-analyzer', name: 'Memory Analyzer', category: 'Kernel Lab', description: '64-frame physical RAM map, page tables & TLB', icon: Layers, color: '#A78BFA' },
+  { appId: 'memory-analyzer', name: 'Memory Analyzer', category: 'Kernel Lab', description: '4KB paged virtual memory map, address translation & TLB', icon: Layers, color: '#A78BFA' },
   { appId: 'disk-analyzer', name: 'Disk Platter Analyzer', category: 'Kernel Lab', description: 'Animated cylinder seek head, SCAN & LOOK algorithms', icon: HardDrive, color: '#FB923C' },
   { appId: 'deadlock-lab', name: 'Deadlock & Banker’s Lab', category: 'Kernel Lab', description: 'Resource Allocation Graph, cycle detector & safety test', icon: AlertTriangle, color: '#EF4444' },
   { appId: 'os-scenarios', name: 'OS Demonstration Lab', category: 'Education', description: '1-click academic lab demonstrations', icon: PlayCircle, color: '#10B981' },

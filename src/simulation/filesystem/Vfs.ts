@@ -11,6 +11,8 @@ import type {
   User,
 } from '../types';
 import type { EventBus } from '../runtime/EventBus';
+import { prng } from '../runtime/Random';
+import { PORTFOLIO_PROJECTS } from '../projects/ProjectsData';
 
 export interface VfsNode {
   name: string;
@@ -153,6 +155,39 @@ export class VirtualFileSystem {
       1000,
       755
     );
+
+    // Populate /home/nova/projects with Harsh's real project portfolio
+    this.mkdir('/home/nova/projects', 755, 1000, 1000);
+    for (const project of PORTFOLIO_PROJECTS) {
+      const projDir = `/home/nova/projects/${project.slug}`;
+      this.mkdir(projDir, 755, 1000, 1000);
+
+      // Write code / markdown files
+      for (const file of project.files) {
+        this.writeFile(`${projDir}/${file.name}`, file.content, 1000, 1000, 644);
+      }
+
+      // Write meta.json
+      const meta = {
+        id: project.id,
+        title: project.title,
+        category: project.category,
+        tagline: project.tagline,
+        stack: project.stack,
+        metrics: project.metrics,
+        processName: project.processName,
+        workloadType: project.workloadType,
+        memoryMb: project.memoryMb,
+        githubUrl: project.githubUrl,
+      };
+      this.writeFile(
+        `${projDir}/meta.json`,
+        JSON.stringify(meta, null, 2),
+        1000,
+        1000,
+        644
+      );
+    }
 
     this.writeFile(
       '/var/log/kernel.log',
@@ -448,7 +483,7 @@ export class VirtualFileSystem {
     if (inode.type === 'DEVICE') {
       if (inode.deviceHandler === 'null') return '';
       if (inode.deviceHandler === 'zero') return '\0\0\0\0';
-      if (inode.deviceHandler === 'random') return Math.random().toString(36).substring(2);
+      if (inode.deviceHandler === 'random') return prng.nextString(16);
     }
 
     return inode.content;

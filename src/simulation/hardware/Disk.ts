@@ -9,6 +9,7 @@ import type {
   DiskSchedulingAlgorithm,
   SimulationTime,
 } from '../types';
+import { prng } from '../runtime/Random';
 
 export class VirtualDisk {
   private sizeGb: number = 20;
@@ -19,6 +20,7 @@ export class VirtualDisk {
   private completedRequests: DiskRequest[] = [];
   private totalHeadMovements: number = 0;
   private algorithm: DiskSchedulingAlgorithm = 'SCAN';
+  private requestCounter: number = 1000;
   private currentActiveRequest: {
     request: DiskRequest;
     ticksRemaining: number;
@@ -68,7 +70,7 @@ export class VirtualDisk {
     const clampedSector = Math.max(0, Math.min(31, Math.round(sector)));
 
     const request: DiskRequest = {
-      id: `dreq-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      id: `dreq-${timestamp}-${++this.requestCounter}`,
       track: clampedTrack,
       sector: clampedSector,
       pid,

@@ -51,6 +51,8 @@ export type EventType =
   | 'PAGE_FAULT'
   | 'PAGE_LOAD'
   | 'PAGE_EVICT'
+  | 'SWAP_OUT'
+  | 'SWAP_IN'
   | 'TLB_HIT'
   | 'TLB_MISS'
   // Storage & Disk
@@ -291,6 +293,7 @@ export interface PageTableEntry {
   isModified: boolean;
   isReferenced: boolean;
   protection: 'READ_ONLY' | 'READ_WRITE' | 'EXECUTE';
+  swapBlockId?: number | null;
 }
 
 export interface TlbEntry {
@@ -308,6 +311,11 @@ export interface MemoryMetrics {
   tlbHits: number;
   tlbMisses: number;
   pageReplacements: number;
+  pageSizeBytes: number;
+  totalSwapSlots: number;
+  usedSwapSlots: number;
+  swapIns: number;
+  swapOuts: number;
 }
 
 // ----------------------------------------------------------------------------
@@ -476,7 +484,9 @@ export type AppId =
   | 'package-manager'
   | 'deadlock-lab'
   | 'event-timeline'
-  | 'os-scenarios';
+  | 'os-scenarios'
+  | 'project-hub'
+  | 'sync-lab';
 
 export interface WindowState {
   id: string;

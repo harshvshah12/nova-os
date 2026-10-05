@@ -21,6 +21,8 @@ import {
   Clock,
   Box,
   Settings,
+  FolderGit2,
+  Utensils,
 } from 'lucide-react';
 
 interface DockItem {
@@ -31,19 +33,18 @@ interface DockItem {
 }
 
 const DOCK_ITEMS: DockItem[] = [
-  { appId: 'terminal', label: 'Terminal', icon: Terminal, color: '#38BDF8' },
+  { appId: 'project-hub', label: "Harsh's Projects", icon: FolderGit2, color: '#38BDF8' },
+  { appId: 'terminal', label: 'Terminal', icon: Terminal, color: '#06B6D4' },
   { appId: 'system-monitor', label: 'System Monitor', icon: Activity, color: '#34D399' },
   { appId: 'process-manager', label: 'Process Manager', icon: Cpu, color: '#F472B6' },
   { appId: 'scheduler-visualizer', label: 'Scheduler', icon: GitCommit, color: '#FBBF24' },
   { appId: 'memory-analyzer', label: 'Memory Analyzer', icon: Layers, color: '#A78BFA' },
+  { appId: 'sync-lab', label: 'Concurrency Lab', icon: Utensils, color: '#EC4899' },
+  { appId: 'deadlock-lab', label: 'Deadlock Lab', icon: AlertTriangle, color: '#EF4444' },
   { appId: 'disk-analyzer', label: 'Disk Platter', icon: HardDrive, color: '#FB923C' },
   { appId: 'file-manager', label: 'File Manager', icon: Folder, color: '#F59E0B' },
   { appId: 'network-monitor', label: 'Network Monitor', icon: Wifi, color: '#818CF8' },
-  { appId: 'deadlock-lab', label: 'Deadlock Lab', icon: AlertTriangle, color: '#EF4444' },
   { appId: 'os-scenarios', label: 'OS Scenarios', icon: PlayCircle, color: '#10B981' },
-  { appId: 'event-timeline', label: 'Event Timeline', icon: Clock, color: '#06B6D4' },
-  { appId: 'text-editor', label: 'Text Editor', icon: FileText, color: '#94A3B8' },
-  { appId: 'package-manager', label: 'Package Manager', icon: Box, color: '#E879F9' },
   { appId: 'settings', label: 'Settings', icon: Settings, color: '#64748B' },
 ];
 

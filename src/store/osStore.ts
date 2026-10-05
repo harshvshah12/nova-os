@@ -94,6 +94,8 @@ const DEFAULT_WINDOWS_CONFIG: Record<
   'deadlock-lab': { title: "Deadlock & Banker's Lab", icon: 'AlertTriangle', width: 820, height: 540 },
   'event-timeline': { title: 'Event Timeline', icon: 'Clock', width: 740, height: 480 },
   'os-scenarios': { title: 'OS Demonstration Lab', icon: 'PlayCircle', width: 760, height: 500 },
+  'project-hub': { title: "Harsh's Project Hub", icon: 'FolderGit2', width: 860, height: 560 },
+  'sync-lab': { title: 'Concurrency & Sync Lab', icon: 'Utensils', width: 840, height: 550 },
 };
 
 export const useOsStore = create<OsStoreState>((set, get) => {

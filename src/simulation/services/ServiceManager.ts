@@ -5,6 +5,7 @@
 
 import type { SystemService, SimulationTime } from '../types';
 import type { EventBus } from '../runtime/EventBus';
+import { prng } from '../runtime/Random';
 
 export class ServiceManager {
   private services: Map<string, SystemService> = new Map();
@@ -79,7 +80,7 @@ export class ServiceManager {
     if (!svc) return false;
 
     svc.state = 'RUNNING';
-    svc.pid = svc.pid || Math.floor(Math.random() * 80) + 10;
+    svc.pid = svc.pid || prng.nextInt(10, 90);
 
     this.eventBus?.emit(
       'SERVICE_START',

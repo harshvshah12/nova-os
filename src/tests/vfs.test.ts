@@ -58,4 +58,19 @@ describe('Phase 6 — Virtual File System (VFS)', () => {
     expect(content).toContain('NOVA Virtual CPU');
     expect(content).toContain('cores: 4');
   });
+
+  it('populates /home/nova/projects/ with authentic project files and metadata', () => {
+    const vfs = new VirtualFileSystem();
+    expect(vfs.findNode('/home/nova/projects')).not.toBeNull();
+    expect(vfs.findNode('/home/nova/projects/deepfake-engine')).not.toBeNull();
+
+    const readme = vfs.readFile('/home/nova/projects/deepfake-engine/README.md');
+    expect(readme).toContain('DeepFake');
+
+    const metaJson = vfs.readFile('/home/nova/projects/deepfake-engine/meta.json');
+    expect(metaJson).not.toBeNull();
+    const parsed = JSON.parse(metaJson!);
+    expect(parsed.processName).toBe('deepfake-detector');
+    expect(parsed.workloadType).toBe('CPU_BOUND');
+  });
 });

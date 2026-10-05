@@ -19,7 +19,13 @@ import {
   GraduationCap,
   Bug,
   LayoutGrid,
+  FolderGit2,
+  Usb,
+  Download,
+  Upload,
+  CheckCircle,
 } from 'lucide-react';
+import { portableStorage } from '../../storage/PortableStorage';
 
 interface TopBarProps {
   onToggleLauncher: () => void;
@@ -39,9 +45,12 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleLauncher }) => {
     restartSystem,
     windows,
     activeWindowId,
+    openWindow,
   } = useOsStore();
 
   const [showPowerMenu, setShowPowerMenu] = useState(false);
+  const [showUsbMenu, setShowUsbMenu] = useState(false);
+  const [usbMounted, setUsbMounted] = useState(portableStorage.isMounted());
 
   const activeWin = windows.find((w) => w.id === activeWindowId);
   const avgCpu = kernel.cpu.getAverageUtilization();
@@ -68,6 +77,15 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleLauncher }) => {
             <span>{activeWin.title}</span>
           </div>
         )}
+
+        <button
+          onClick={() => openWindow('project-hub')}
+          className="hidden md:flex items-center gap-1.5 px-2 py-0.5 rounded bg-cyan-950/40 border border-cyan-500/30 text-cyan-300 font-medium hover:bg-cyan-900/40 transition-colors text-[11px]"
+          title="Open Harsh's Portfolio Projects Hub"
+        >
+          <FolderGit2 className="w-3.5 h-3.5 text-cyan-400" />
+          <span>Projects</span>
+        </button>
       </div>
 
       {/* Middle Section: Simulation Clock & Controls */}
@@ -158,6 +176,66 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleLauncher }) => {
             <HardDrive className="w-3 h-3" />
             T{currentTrack}
           </span>
+        </div>
+
+        {/* USB Portable Mode Control */}
+        <div className="relative">
+          <button
+            onClick={() => setShowUsbMenu(!showUsbMenu)}
+            className={`flex items-center gap-1.5 px-2 py-0.5 rounded border text-[10px] font-mono transition-colors ${
+              usbMounted
+                ? 'bg-purple-950/40 border-purple-500/40 text-purple-300'
+                : 'bg-slate-800/80 border-white/5 text-slate-400 hover:text-slate-200'
+            }`}
+            title="USB Portable Storage & Checkpoints"
+          >
+            <Usb className="w-3 h-3 text-purple-400" />
+            <span>{usbMounted ? 'USB: Mounted' : 'USB Mode'}</span>
+          </button>
+
+          {showUsbMenu && (
+            <div className="absolute right-0 top-8 w-64 bg-[#0F1626] border border-white/10 rounded-lg shadow-2xl p-2.5 z-50 space-y-2">
+              <div className="text-[11px] font-bold text-slate-200 flex justify-between items-center pb-1.5 border-b border-white/5">
+                <span>USB Portable Edition</span>
+                <span className="text-[9px] text-purple-400 font-mono">/mnt/usb</span>
+              </div>
+              <div className="space-y-1.5 font-mono text-[10px]">
+                <button
+                  onClick={() => {
+                    if (usbMounted) {
+                      portableStorage.unmountUsb(kernel);
+                      setUsbMounted(false);
+                    } else {
+                      portableStorage.mountUsb(kernel);
+                      setUsbMounted(true);
+                    }
+                  }}
+                  className="w-full px-2 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-left flex items-center justify-between text-slate-200"
+                >
+                  <span>{usbMounted ? 'Unmount USB Drive' : 'Mount Virtual USB Stick'}</span>
+                  <CheckCircle className={`w-3 h-3 ${usbMounted ? 'text-emerald-400' : 'text-slate-500'}`} />
+                </button>
+                <button
+                  onClick={async () => {
+                    const chk = portableStorage.captureCheckpoint(kernel, 'Live Snapshot');
+                    await portableStorage.save(chk);
+                    const json = await portableStorage.exportFile();
+                    const blob = new Blob([json], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `nova-checkpoint-${Date.now()}.json`;
+                    a.click();
+                    setShowUsbMenu(false);
+                  }}
+                  className="w-full px-2 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-left flex items-center gap-1.5 text-cyan-300"
+                >
+                  <Download className="w-3 h-3 text-cyan-400" />
+                  <span>Export Checkpoint (.json)</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Power / Restart Menu */}

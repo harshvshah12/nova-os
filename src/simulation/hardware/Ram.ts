@@ -8,13 +8,12 @@ import type { MemoryFrame, SimulationTime } from '../types';
 export class VirtualRam {
   private frames: MemoryFrame[] = [];
   private totalMb: number = 2048;
-  private frameCount: number = 64; // Visualized physical frames
-  private frameSizeBytes: number;
+  private frameCount: number = 64; // Physical frame buffer
+  public readonly frameSizeBytes: number = 4096; // Strictly 4 KB standard frame size
 
   constructor(totalMb: number = 2048, frameCount: number = 64) {
     this.totalMb = totalMb;
     this.frameCount = frameCount;
-    this.frameSizeBytes = Math.floor((this.totalMb * 1024 * 1024) / this.frameCount);
     this.initFrames();
   }
 

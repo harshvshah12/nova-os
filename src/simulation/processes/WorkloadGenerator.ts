@@ -4,6 +4,7 @@
 // ============================================================================
 
 import type { Instruction, WorkloadType } from '../types';
+import { prng } from '../runtime/Random';
 
 export class WorkloadGenerator {
   public static createInstructions(
@@ -26,7 +27,7 @@ export class WorkloadGenerator {
   public static createCpuBound(length: number = 8): Instruction[] {
     const list: Instruction[] = [];
     for (let i = 0; i < length; i++) {
-      const cycles = Math.floor(Math.random() * 4) + 4; // 4 to 7 cycles
+      const cycles = prng.nextInt(4, 7); // 4 to 7 cycles
       list.push({
         type: 'CPU',
         cycles,
@@ -56,7 +57,7 @@ export class WorkloadGenerator {
         type: 'IO_REQUEST',
         cycles: 1,
         cyclesRemaining: 1,
-        ioTrack: Math.floor(Math.random() * 180) + 10,
+        ioTrack: prng.nextInt(10, 190),
         description: `Disk seek track ${(i * 25) % 190}`,
       });
       list.push({

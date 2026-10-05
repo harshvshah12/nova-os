@@ -67,6 +67,10 @@ export class SchedulerEngine {
     return this.config;
   }
 
+  public getAlgorithm(): SchedulerAlgorithm {
+    return this.config.algorithm;
+  }
+
   public setAlgorithm(algo: SchedulerAlgorithm): void {
     const oldAlgo = this.config.algorithm;
     this.config.algorithm = algo;

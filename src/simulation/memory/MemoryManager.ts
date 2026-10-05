@@ -37,6 +37,13 @@ export class MemoryManager {
   private tlbMisses: number = 0;
   private pageReplacements: number = 0;
 
+  // Swap space abstraction (backing store on virtual disk)
+  private swapSpace: Map<number, { pid: number; pageNumber: number }> = new Map();
+  private nextSwapBlockId: number = 1;
+  private readonly totalSwapSlots: number = 256;
+  private swapIns: number = 0;
+  private swapOuts: number = 0;
+
   // FIFO replacement queue of frame numbers
   private fifoQueue: number[] = [];
 
@@ -75,6 +82,11 @@ export class MemoryManager {
       tlbHits: this.tlbHits,
       tlbMisses: this.tlbMisses,
       pageReplacements: this.pageReplacements,
+      pageSizeBytes: this.ram.frameSizeBytes,
+      totalSwapSlots: this.totalSwapSlots,
+      usedSwapSlots: this.swapSpace.size,
+      swapIns: this.swapIns,
+      swapOuts: this.swapOuts,
     };
   }
 
@@ -283,6 +295,7 @@ export class MemoryManager {
     if (freeFrames.length > 0) {
       // Free frame available!
       const frame = freeFrames[0];
+      this.checkAndSwapIn(pid, pageNumber, frame.frameNumber, timestamp);
       this.ram.allocateFrame(frame.frameNumber, pid, pageNumber, timestamp);
       this.fifoQueue.push(frame.frameNumber);
       return frame.frameNumber;
@@ -296,13 +309,31 @@ export class MemoryManager {
     const oldPid = victimFrame.allocatedPid;
     const oldPage = victimFrame.pageNumber;
 
-    // Invalidate old page table entry
+    // Invalidate old page table entry and swap out if dirty
     if (oldPid !== null && oldPage !== null) {
       const oldTable = this.pageTables.get(oldPid);
       const oldPte = oldTable?.get(oldPage);
       if (oldPte) {
         oldPte.isPresent = false;
         oldPte.frameNumber = null;
+
+        // If dirty, swap out to simulated disk swap partition
+        if (oldPte.isModified || victimFrame.isDirty) {
+          const swapSlot = this.nextSwapBlockId++;
+          this.swapSpace.set(swapSlot, { pid: oldPid, pageNumber: oldPage });
+          oldPte.swapBlockId = swapSlot;
+          oldPte.isModified = false;
+          this.swapOuts++;
+
+          this.eventBus?.emit(
+            'SWAP_OUT',
+            'memory',
+            'MemoryManager',
+            `Dirty Page Swapped Out to Disk: PID ${oldPid} Page ${oldPage} -> Swap Slot #${swapSlot}`,
+            timestamp,
+            { pid: oldPid, metadata: { pageNumber: oldPage, swapSlot } }
+          );
+        }
       }
 
       // Remove from old process's PCB
@@ -320,7 +351,7 @@ export class MemoryManager {
         'PAGE_EVICT',
         'memory',
         'MemoryManager',
-        `Frame Eviction (${this.replacementAlgorithm}): Frame ${victimFrameNumber} (PID ${oldPid}, Page ${oldPage}) swapped out`,
+        `Frame Eviction (${this.replacementAlgorithm}): Frame ${victimFrameNumber} (PID ${oldPid}, Page ${oldPage}) evicted`,
         timestamp,
         {
           pid,
@@ -334,6 +365,9 @@ export class MemoryManager {
         }
       );
     }
+
+    // Check if new page is being brought in from swap
+    this.checkAndSwapIn(pid, pageNumber, victimFrameNumber, timestamp);
 
     // Allocate frame for the new page
     this.ram.allocateFrame(victimFrameNumber, pid, pageNumber, timestamp);
@@ -461,14 +495,86 @@ export class MemoryManager {
     });
   }
 
+  private checkAndSwapIn(
+    pid: number,
+    pageNumber: number,
+    frameNumber: number,
+    timestamp: SimulationTime
+  ): void {
+    const table = this.pageTables.get(pid);
+    const pte = table?.get(pageNumber);
+    if (pte && pte.swapBlockId != null) {
+      const slot = pte.swapBlockId;
+      this.swapSpace.delete(slot);
+      pte.swapBlockId = null;
+      this.swapIns++;
+
+      this.eventBus?.emit(
+        'SWAP_IN',
+        'memory',
+        'MemoryManager',
+        `Page Swapped In from Disk: PID ${pid} Page ${pageNumber} (Slot #${slot}) -> Frame ${frameNumber}`,
+        timestamp,
+        { pid, metadata: { pageNumber, swapSlot: slot, frameNumber } }
+      );
+    }
+  }
+
+  /**
+   * Educational address breakdown: calculates Virtual Page Number (VPN),
+   * offset, TLB presence, physical frame number (PFN), and physical address.
+   */
+  public translateVirtualAddress(
+    virtualAddress: number,
+    pid: number
+  ): {
+    virtualAddress: number;
+    vpn: number;
+    offset: number;
+    frameNumber: number | null;
+    physicalAddress: number | null;
+    isPresent: boolean;
+    inTlb: boolean;
+    isDirty: boolean;
+    protection: string;
+    swapBlockId: number | null;
+  } {
+    const pageSize = this.ram.frameSizeBytes;
+    const vpn = Math.floor(virtualAddress / pageSize);
+    const offset = virtualAddress % pageSize;
+
+    const inTlb = this.tlb.some((e) => e.pid === pid && e.pageNumber === vpn);
+    const table = this.pageTables.get(pid);
+    const pte = table?.get(vpn);
+
+    const frameNumber = pte?.isPresent ? pte.frameNumber : null;
+    const physicalAddress = frameNumber !== null ? frameNumber * pageSize + offset : null;
+
+    return {
+      virtualAddress,
+      vpn,
+      offset,
+      frameNumber,
+      physicalAddress,
+      isPresent: pte?.isPresent ?? false,
+      inTlb,
+      isDirty: pte?.isModified ?? false,
+      protection: pte?.protection ?? 'READ_WRITE',
+      swapBlockId: pte?.swapBlockId ?? null,
+    };
+  }
+
   public reset(): void {
     this.ram.initFrames();
     this.pageTables.clear();
     this.tlb = [];
     this.fifoQueue = [];
+    this.swapSpace.clear();
     this.totalPageFaults = 0;
     this.tlbHits = 0;
     this.tlbMisses = 0;
     this.pageReplacements = 0;
+    this.swapIns = 0;
+    this.swapOuts = 0;
   }
 }

@@ -29,6 +29,8 @@ import { EventTimelineApp } from '../apps/EventTimelineApp';
 import { SettingsApp } from '../apps/SettingsApp';
 import { PackageManagerApp } from '../apps/PackageManagerApp';
 import { CalculatorApp } from '../apps/CalculatorApp';
+import { ProjectHubApp } from '../apps/ProjectHubApp';
+import { SyncLabApp } from '../apps/SyncLabApp';
 
 import {
   Terminal,
@@ -46,6 +48,8 @@ import {
   CheckCircle,
   AlertCircle,
   Info,
+  FolderGit2,
+  Utensils,
 } from 'lucide-react';
 
 const APP_COMPONENT_MAP: Record<AppId, React.FC<any>> = {
@@ -64,19 +68,22 @@ const APP_COMPONENT_MAP: Record<AppId, React.FC<any>> = {
   settings: SettingsApp,
   'package-manager': PackageManagerApp,
   calculator: CalculatorApp,
+  'project-hub': ProjectHubApp,
+  'sync-lab': SyncLabApp,
 };
 
 const DESKTOP_SHORTCUTS: { appId: AppId; label: string; icon: React.ElementType; color: string }[] = [
-  { appId: 'terminal', label: 'Terminal', icon: Terminal, color: '#38BDF8' },
+  { appId: 'project-hub', label: "Harsh's Projects", icon: FolderGit2, color: '#38BDF8' },
+  { appId: 'terminal', label: 'Terminal', icon: Terminal, color: '#06B6D4' },
   { appId: 'system-monitor', label: 'System Monitor', icon: Activity, color: '#34D399' },
   { appId: 'process-manager', label: 'Processes', icon: Cpu, color: '#F472B6' },
   { appId: 'scheduler-visualizer', label: 'Scheduler Lab', icon: GitCommit, color: '#FBBF24' },
   { appId: 'memory-analyzer', label: 'RAM / Paging', icon: Layers, color: '#A78BFA' },
-  { appId: 'disk-analyzer', label: 'Disk Elevator', icon: HardDrive, color: '#FB923C' },
+  { appId: 'sync-lab', label: 'Concurrency Lab', icon: Utensils, color: '#EC4899' },
   { appId: 'deadlock-lab', label: 'Banker’s Lab', icon: AlertTriangle, color: '#EF4444' },
+  { appId: 'disk-analyzer', label: 'Disk Elevator', icon: HardDrive, color: '#FB923C' },
   { appId: 'os-scenarios', label: 'OS Scenarios', icon: PlayCircle, color: '#10B981' },
   { appId: 'file-manager', label: 'Files (/home)', icon: Folder, color: '#F59E0B' },
-  { appId: 'event-timeline', label: 'Kernel Events', icon: Clock, color: '#06B6D4' },
   { appId: 'settings', label: 'Settings', icon: SettingsIcon, color: '#94A3B8' },
 ];
 

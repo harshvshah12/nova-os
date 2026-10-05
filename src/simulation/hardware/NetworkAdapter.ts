@@ -9,6 +9,7 @@ import type {
   PacketProtocol,
   SimulationTime,
 } from '../types';
+import { prng } from '../runtime/Random';
 
 export class VirtualNetworkAdapter {
   private interfaceName: string = 'eth0';
@@ -17,6 +18,7 @@ export class VirtualNetworkAdapter {
   private gateway: string = '192.168.1.1';
   private mac: string = '02:00:00:1A:2B:3C';
   private isUp: boolean = true;
+  private packetCounter: number = 5000;
 
   private txPackets: number = 0;
   private rxPackets: number = 0;
@@ -83,10 +85,10 @@ export class VirtualNetworkAdapter {
     dstPort?: number
   ): NetworkPacket {
     const packetSize = payload.length + 40; // 40 bytes IP/TCP header
-    const latency = dstIp === '127.0.0.1' ? 2 : Math.floor(Math.random() * 20) + 15; // 15-35ms latency
+    const latency = dstIp === '127.0.0.1' ? 2 : prng.nextInt(15, 35); // 15-35ms latency
 
     const packet: NetworkPacket = {
-      id: `pkt-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      id: `pkt-${timestamp}-${++this.packetCounter}`,
       protocol,
       srcIp: this.ip,
       dstIp,
@@ -154,7 +156,7 @@ export class VirtualNetworkAdapter {
   ): NetworkPacket {
     const packetSize = payload.length + 40;
     const packet: NetworkPacket = {
-      id: `pkt-rx-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      id: `pkt-rx-${timestamp}-${++this.packetCounter}`,
       protocol,
       srcIp,
       dstIp: this.ip,

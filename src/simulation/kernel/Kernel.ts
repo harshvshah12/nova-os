@@ -17,6 +17,8 @@ import { UserManager } from '../security/UserManager';
 import { ServiceManager } from '../services/ServiceManager';
 import { DeadlockDetector } from '../deadlock/DeadlockDetector';
 import { Shell } from '../terminal/Shell';
+import { SyncEngine } from '../synchronization/SyncEngine';
+
 import type {
   HardwareConfig,
   KernelEvent,
@@ -48,6 +50,7 @@ export class Kernel {
   public readonly userManager: UserManager;
   public readonly serviceManager: ServiceManager;
   public readonly deadlockDetector: DeadlockDetector;
+  public readonly syncEngine: SyncEngine;
   public readonly shell: Shell;
 
   // Boot & System State
@@ -84,6 +87,7 @@ export class Kernel {
     this.userManager = new UserManager(this.eventBus);
     this.serviceManager = new ServiceManager(this.eventBus);
     this.deadlockDetector = new DeadlockDetector(this.eventBus);
+    this.syncEngine = new SyncEngine(this.eventBus);
 
     // 3. Initialize Shell
     this.shell = new Shell({
